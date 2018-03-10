@@ -1,0 +1,23 @@
+So I did all the basic stuff and all the bonus questions:
+
+1.the screenshot shows that you can add a star to a random position and also select either of them,
+and move them around, 
+and delete the select one.
+"A": will allow you to add a random star
+"D": will allow you to delete the current selected star
+"T": not tab will help you to choose a star, for some reason tab is not listened on my system.
+
+
+2. you can drag the kite around
+
+3. you can make the hopscotch move its position and also when click shift with left and right the step is only 0.1*sidewalk
+
+4.also since when you keyPress is captured the keyClicked is also getting called, in order to distinguish the
+  click to change the position of the star, and click to define the tail of the kite
+  you need to click
+  "K": to let you make click into the drag Kite mode
+  "L": click L will make u exit the drag kite mode
+
+5. and when you are in "L" mode when you drag you can change the centroid of all the stars. and also they will always within the view
+
+6. and by clicking page up and down you can change the length of the fence.
