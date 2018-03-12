@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.media.opengl.GL2;
+import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLEventListener;
 import javax.media.opengl.awt.GLCanvas;
@@ -67,11 +68,11 @@ public class View extends GLCanvas implements GLEventListener, KeyListener, Mous
 	private int mouseX = CANVAS_WIDTH/2;
 	private int mouseY = CANVAS_HEIGHT/2;
 	private RubiksCube rubiksCube;
-
+    //private int count=0;
 	private GLWindow canvas;
 	private final FPSAnimator		animator;
 
-
+	private int count=0;
 	public enum Color { BLACK, YELLOW, GREEN, ORANGE, BLUE, RED; };
 	//**********************************************************************
 	// Constructors and Finalizer
@@ -133,14 +134,31 @@ public class View extends GLCanvas implements GLEventListener, KeyListener, Mous
 
 	@Override
 	public void display(GLAutoDrawable drawable) {
+		count=(count+1)%30;
 		drawRubiksCube(drawable.getGL().getGL2());
+
+		//drawPlane(drawable.getGL().getGL2());
+		drawTriangle(drawable.getGL().getGL2(),count);
 	}
 	
+	public void drawTriangle(GL2 gl,int speed)
+	{
+		gl.glColor3f(0.0f,1.0f,0.0f);
+		gl.glBegin(GL.GL_TRIANGLES);
+		gl.glVertex3f(-5.0f+speed*0.1f,2.0f,-2.0f);
+		gl.glVertex3f(-6.0f+speed*0.1f,2.0f,-2.0f);
+		gl.glVertex3f(-5.0f+speed*0.1f,6.0f,3.0f);
+		gl.glEnd();
+      
+	}
 	
 	//**********************************************************************
 	// Private Methods (Viewport)
 	//**********************************************************************
+
 	private void drawRubiksCube(GL2 gl) {
+		//count=count+1;
+		//System.out.println("I am getting drawed!"+count);
 		gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		gl.glLoadIdentity();
 		
@@ -155,21 +173,28 @@ public class View extends GLCanvas implements GLEventListener, KeyListener, Mous
 			for (int y=0; y<rubiksCube.getSize(); y++) {
 				for (int z=0; z<rubiksCube.getSize(); z++) {
 					gl.glPushMatrix();
-					
-					gl.glRotatef(columnAnglesX[x], ONE_F, ZERO_F, ZERO_F);
-					gl.glRotatef(rowAnglesY[y], ZERO_F, ONE_F, ZERO_F);
-					gl.glRotatef(faceAnglesZ[z], ZERO_F, ZERO_F, ONE_F);
+					//THe code following are useless for now.
+					//gl.glRotatef(columnAnglesX[x], ONE_F, ZERO_F, ZERO_F);
+					//gl.glRotatef(rowAnglesY[y], ZERO_F, ONE_F, ZERO_F);
+					//gl.glRotatef(faceAnglesZ[z], ZERO_F, ZERO_F, ONE_F);
 					
 					// bottom-left-front corner of cube is (0,0,0) so we need to center it at the origin
 					float t = (float) lastIdx/2;
 					gl.glTranslatef((x-t)*CUBIE_TRANSLATION_FACTOR, (y-t)*CUBIE_TRANSLATION_FACTOR, -(z-t)*CUBIE_TRANSLATION_FACTOR);
 					
 					drawCubie(gl, rubiksCube.getVisibleFaces(x, y, z), rubiksCube.getCubie(x, y, z));
-						
-					gl.glPopMatrix();
+				/*	if(x==1 && y==1&&z==1)
+					{
+		            			drawPlane(gl);
+		            			System.out.println("I am getting drawed!");
+	
+						}*/
+
+				    gl.glPopMatrix();
 				}
 			}
 		}
+
 	}
 	
 	private void drawCubie(GL2 gl, int visibleFaces, Cubie cubie) {
