@@ -73,6 +73,10 @@ public class View extends GLCanvas implements GLEventListener, KeyListener, Mous
 	private final FPSAnimator		animator;
 
 	private int count=0;
+	//0 will be the flower and 1 will be the zigzag
+	private int cuttingoptions=-1;
+	private boolean reset=false;
+	private boolean stop=true;
 	public enum Color { BLACK, YELLOW, GREEN, ORANGE, BLUE, RED; };
 	//**********************************************************************
 	// Constructors and Finalizer
@@ -140,8 +144,22 @@ public class View extends GLCanvas implements GLEventListener, KeyListener, Mous
 		drawRubiksCube(drawable.getGL().getGL2());
 
 		//drawPlane(drawable.getGL().getGL2());
-		drawPlane(drawable.getGL().getGL2(),count);
-	}
+		if(cuttingoptions==0 && !stop)
+		{
+			//reset the count
+			if(!reset)
+			{
+			  reset=true;
+			  count=0;	
+			}
+			
+			drawPlane(drawable.getGL().getGL2(),count);
+			drawZigZagPlane(drawable.getGL().getGL2(),count,1,0);
+			drawZigZagPlane(drawable.getGL().getGL2(),count,-1,2);
+
+
+		}
+			}
 	
 	public void drawPlane(GL2 gl,int speed)
 	{
@@ -150,16 +168,41 @@ public class View extends GLCanvas implements GLEventListener, KeyListener, Mous
 		gl.glColor3f(0.0f,1.0f,0.0f);
 		//gl.glBegin(GL.GL_TRIANGLES);
 		gl.glBegin(GL_QUADS);
-		gl.glTranslatef(-3.0f, -3.0f, -3.0f);
-		gl.glPushMatrix();
-	
-		gl.glVertex3f(-12.0f+speed*0.1f,4.0f,0.0f);
-		gl.glVertex3f(-6.0f+speed*0.1f,4.0f,0.0f);
-		gl.glVertex3f(-6.0f+speed*0.1f,-2.0f,0.0f);
-		gl.glVertex3f(-12.0f+speed*0.1f,-2.0f,0.0f);
-		
+		//gl.glTranslatef(-3.0f, -3.0f, -3.0f);
+		//gl.glPushMatrix();
+		gl.glVertex3f(-12.0f+speed*0.1f,3.0f,0.0f);
+		gl.glVertex3f(-6.0f+speed*0.1f,3.0f,0.0f);
+		gl.glVertex3f(-6.0f+speed*0.1f,-3.0f,0.0f);
+		gl.glVertex3f(-12.0f+speed*0.1f,-3.0f,0.0f);
 		gl.glEnd();
       
+	}
+	//tilt is to change the sign and make the plane go left or right
+	public void drawZigZagPlane(GL2 gl, int speed, int tilt,int color)
+	{
+		if(color==0)
+		{
+			gl.glColor3f(1.0f,0.5f,0.5f);	
+		}
+		else if(color==1)
+		{
+			gl.glColor3f(0.5f,1.0f,0.5f);
+		}
+		else
+		{
+			gl.glColor3f(0.5f,0.5f,1.0f);	
+		}
+		
+		//gl.glBegin(GL.GL_TRIANGLES);
+		gl.glBegin(GL_QUADS);
+		//gl.glTranslatef(-3.0f, -3.0f, -3.0f);
+		//gl.glPushMatrix();
+		gl.glVertex3f(-12.0f+speed*0.1f,3.0f,tilt*3.0f);
+		gl.glVertex3f(-6.0f+speed*0.1f,3.0f,tilt*3.0f);
+		gl.glVertex3f(-6.0f+speed*0.1f,-3.0f,-tilt*3.0f);
+		gl.glVertex3f(-12.0f+speed*0.1f,-3.0f,-tilt*3.0f);
+		gl.glEnd();
+
 	}
 
 	
@@ -299,9 +342,14 @@ public class View extends GLCanvas implements GLEventListener, KeyListener, Mous
 				if (e.isShiftDown()) cameraAngleZ -= CAMERA_ROTATE_STEP_DEGREES;
 				else cameraAngleY += CAMERA_ROTATE_STEP_DEGREES;
 				break;
-
-
-
+			//means start to draw the flower:
+			case KeyEvent.VK_F:
+			    cuttingoptions=0;
+			    stop=false;
+			    break;
+			//stop the animation
+			case KeyEvent.VK_S:
+				stop=true;
 			case KeyEvent.VK_R:
 				cameraAngleX = DEFAULT_CAMERA_ANGLE_X;
 				cameraAngleY = DEFAULT_CAMERA_ANGLE_Y;
