@@ -134,23 +134,34 @@ public class View extends GLCanvas implements GLEventListener, KeyListener, Mous
 
 	@Override
 	public void display(GLAutoDrawable drawable) {
-		count=(count+1)%30;
+		count=(count+1)%450;//%30;
+		//System.out.println("count is: "+count);
+		//when count goes to 180, the cube should get split!!
 		drawRubiksCube(drawable.getGL().getGL2());
 
 		//drawPlane(drawable.getGL().getGL2());
-		drawTriangle(drawable.getGL().getGL2(),count);
+		drawPlane(drawable.getGL().getGL2(),count);
 	}
 	
-	public void drawTriangle(GL2 gl,int speed)
+	public void drawPlane(GL2 gl,int speed)
 	{
+		/*gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		gl.glLoadIdentity();*/
 		gl.glColor3f(0.0f,1.0f,0.0f);
-		gl.glBegin(GL.GL_TRIANGLES);
-		gl.glVertex3f(-5.0f+speed*0.1f,2.0f,-2.0f);
-		gl.glVertex3f(-6.0f+speed*0.1f,2.0f,-2.0f);
-		gl.glVertex3f(-5.0f+speed*0.1f,6.0f,3.0f);
+		//gl.glBegin(GL.GL_TRIANGLES);
+		gl.glBegin(GL_QUADS);
+		gl.glTranslatef(-3.0f, -3.0f, -3.0f);
+		gl.glPushMatrix();
+	
+		gl.glVertex3f(-12.0f+speed*0.1f,4.0f,0.0f);
+		gl.glVertex3f(-6.0f+speed*0.1f,4.0f,0.0f);
+		gl.glVertex3f(-6.0f+speed*0.1f,-2.0f,0.0f);
+		gl.glVertex3f(-12.0f+speed*0.1f,-2.0f,0.0f);
+		
 		gl.glEnd();
       
 	}
+
 	
 	//**********************************************************************
 	// Private Methods (Viewport)
