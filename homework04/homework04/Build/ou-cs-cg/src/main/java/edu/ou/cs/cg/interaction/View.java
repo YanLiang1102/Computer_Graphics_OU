@@ -65,7 +65,7 @@ public final class View
 	private float vx=0.0f;
     private float vy=0.0f;
     //60fps, 2 secs,is 120 slides, so each slides should move 1.8f/120=0.015f.
-    private float speed=0.015f;
+    private  float speed=0.015f;
     private float xleft=-0.9f;
     private float xright=0.9f;
     private float ybottom=-0.9f;
@@ -74,6 +74,8 @@ public final class View
     private float starty=0.0f;
     private float currentx=0.0f;
     private float currenty=0.0f;
+    //1 is the box, 2 is the regular hexagon ,2 is the 32 hexagon for the circle, 4 is the non-regular one
+    private int container=1; 
 
 	private TextRenderer			renderer;
 
@@ -223,6 +225,19 @@ public class Vector {
 		this.cursor = cursor;
 		canvas.repaint();
 	}
+	public void setSpeed(float newspeed)
+	{
+		this.speed=newspeed;
+	}
+	public float getSpeed()
+	{
+		return this.speed;
+	}
+
+	public void setContainer(int container)
+	{ 
+      this.container=container;
+	}
 
 	public void		clear()
 	{
@@ -335,14 +350,23 @@ public class Vector {
 	{
 		GL2		gl = drawable.getGL().getGL2();
 		gl.glClear(GL.GL_COLOR_BUFFER_BIT);		// Clear the buffer
+		System.out.println("container: "+container);
+		if(container==1)
+		{
+		 drawRec(gl);	
+		}
+		else if(container==2)
+		{
+			drawSixHex(gl);
+		}
 		movePoint(gl,speed,xleft,xright,ybottom, ytop);
-		generateRandom();
+		//generateRandom();
 		drawBounds(gl);							// Unit bounding box
 		drawAxes(gl);							// X and Y axes
 	    drawCursor(gl);							// Crosshairs at mouse location
 	    drawCursorCoordinates(drawable);		// Draw some text
 	    drawPolyline(gl);						// Draw the user's sketch
-	    drawRec(gl);
+	    
 	}
 
 	//**********************************************************************
@@ -461,6 +485,18 @@ public class Vector {
 
 		gl.glEnd();
 
+	}
+	private void drawSixHex(GL2 gl)
+	{
+		gl.glColor3f(0.25f, 0.25f, 0.25f);
+		gl.glBegin(GL.GL_LINE_LOOP);
+		for (int i=0; i<6; i++)
+		{
+			double	theta = (2.0 * Math.PI) * (i / 6.0);
+            //teh radius is 0.8 here.
+			gl.glVertex2d(0 + 0.8f * Math.cos(theta),
+						  0 + 0.8f * Math.sin(theta));
+		}
 	}
 
 	private void drawBounds(GL2 gl)

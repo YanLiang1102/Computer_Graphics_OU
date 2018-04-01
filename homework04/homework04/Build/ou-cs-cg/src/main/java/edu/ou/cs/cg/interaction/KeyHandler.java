@@ -64,14 +64,14 @@ public final class KeyHandler extends KeyAdapter
 				p.x = 0.0;	p.y = 0.0;	break;
 
 			case KeyEvent.VK_NUMPAD4:
-			case KeyEvent.VK_LEFT:
-				p.x -= a;	p.y += 0.0;	break;
+			     view.setContainer(4);
+			
 
 			case KeyEvent.VK_NUMPAD6:
-			case KeyEvent.VK_RIGHT:
-				p.x += a;	p.y += 0.0;	break;
+			
 
 			case KeyEvent.VK_NUMPAD2:
+			     view.setContainer(2); break;
 			case KeyEvent.VK_DOWN:
 				p.x += 0.0;	p.y -= a;	break;
 
@@ -80,16 +80,22 @@ public final class KeyHandler extends KeyAdapter
 				p.x += 0.0;	p.y += a;	break;
 
 			case KeyEvent.VK_NUMPAD1:
-				p.x -= a;	p.y -= a;	break;
+				view.setContainer(1);	break;
 
 			case KeyEvent.VK_NUMPAD7:
 				p.x -= a;	p.y += a;	break;
 
 			case KeyEvent.VK_NUMPAD3:
-				p.x += a;	p.y -= a;	break;
+				view.setContainer(3);	break;
 
 			case KeyEvent.VK_NUMPAD9:
 				p.x += a;	p.y += a;	break;
+			//slow down
+			case KeyEvent.VK_LEFT:
+				view.setSpeed(view.getSpeed()*0.9f);	break;
+		    //speed up
+			case KeyEvent.VK_RIGHT:
+			    view.setSpeed(view.getSpeed()*1.1f);;	break;
 
 			case KeyEvent.VK_DELETE:
 				view.clear();
