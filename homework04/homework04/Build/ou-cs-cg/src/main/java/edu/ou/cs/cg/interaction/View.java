@@ -74,6 +74,7 @@ public final class View
     private float starty=0.0f;
     private float currentx=0.0f;
     private float currenty=0.0f;
+    private ArrayList<Point2D.Float> pointlist;
     //1 is the box, 2 is the regular hexagon ,2 is the 32 hexagon for the circle, 4 is the non-regular one
     private int container=1; 
 
@@ -97,7 +98,6 @@ public final class View
  //       	this.y=y;
  //       }
 	// }
-
 
 public class Vector {
 
@@ -350,7 +350,7 @@ public class Vector {
 	{
 		GL2		gl = drawable.getGL().getGL2();
 		gl.glClear(GL.GL_COLOR_BUFFER_BIT);		// Clear the buffer
-		System.out.println("container: "+container);
+		//System.out.println("container: "+container);
 		if(container==1)
 		{
 		 drawRec(gl);	
@@ -372,11 +372,45 @@ public class Vector {
 	//**********************************************************************
 	// Private Methods (Scene)
 	//**********************************************************************
+	//retunr the index of that line
+
+    private int checkIfReturnAnyIntersection(ArrayList<Point2D.Float> pointlist,Point2D.Float startpoint, Vector startdirection)
+    {
+    	//return the index of that intersection side in the list.
+    	//(aybx-axby) * (aycx-axcy) > 0;  B and A and C and A
+    	//also need B and C and A and C (cybx-cxby)*(cyax-cxay)>0
+    	for (int i=0;i<pointlist.size()-1;i++)
+    	{
+           Point2D.Float p1=pointlist.get(i);
+           Point2D.Float p2=pointlist.get(i+1);
+           Vector a=new Vector(p1.x-startpoint.x,p1.y-startpoint.y);
+           Vector c=new Vector(p2.x-startpoint.x,p2.y-startpoint.y);
+           if(checkVectorWithinTwoVectors(startdirection,a,c))
+           {
+           	return (i+1);
+           }
+           
+    	}
+    	//if none, need to return 0.
+    	return 0; 
+
+
+    }
+    //use the cross product property to check this, check if b is with in vector a and c
+    private boolean checkVectorWithinTwoVectors(Vector b, Vector a, Vector c)
+    {
+      return (a.dY*b.dX-a.dX*b.dY)*(a.dY*c.dX-a.dX*c.dY)>0&&(c.dY*b.dX-c.dX*b.dY)*(c.dY*a.dX-c.dX*a.dY)>0;
+
+    }
 
     private void movePoint(GL2 gl, float speed,float xleft, float xright, float ybottom, float ytop)
     {
     	currentx=startx+counter*speed*vx;
     	currenty=starty+counter*speed*vy;
+        Vector direction=new Vector(vx,vy);
+        Point2D.Float startpoint=new Point2D.Float(startx,starty);
+    	int index=checkIfReturnAnyIntersection(pointlist,startpoint,direction);
+        System.out.println("index is: "+index);
 
 		gl.glBegin(GL.GL_LINE_LOOP);
 		gl.glColor3f(0.5f, 0.5f, 0.5f);
@@ -403,12 +437,6 @@ public class Vector {
         	counter=0;
         	startx=currentx;
         	starty=currenty;
-
-
-        	// System.out.println("x part is: "+out.dX);
-        	// System.out.println("y part is: "+out.dY);
-        	// System.out.println("vx is: "+vx);
-        	// System.out.println("vy is: "+vy);
         }
         else if(currentx-r<=xleft)
         {
@@ -424,10 +452,6 @@ public class Vector {
         	counter=0;
         	startx=currentx;
         	starty=currenty;
-        	// System.out.println("x part is: "+out.dX);
-        	// System.out.println("y part is: "+out.dY);
-        	// System.out.println("vx is: "+vx);
-        	// System.out.println("vy is: "+vy);
         }
         else if(currenty+r>=ytop)
         {
@@ -443,10 +467,6 @@ public class Vector {
         	counter=0;
         	startx=currentx;
         	starty=currenty;
-         //    System.out.println("x part is: "+out.dX);
-        	// System.out.println("y part is: "+out.dY);
-        	// System.out.println("vx is: "+vx);
-        	// System.out.println("vy is: "+vy);
         }
         else if(currenty-r<=ybottom)
         {
@@ -462,10 +482,6 @@ public class Vector {
         	counter=0;
         	startx=currentx;
         	starty=currenty;
-        	// System.out.println("x part is: "+out.dX);
-        	// System.out.println("y part is: "+out.dY);
-        	// System.out.println("vx is: "+vx);
-        	// System.out.println("vy is: "+vy);
         }
 		gl.glEnd();
     }
@@ -476,7 +492,15 @@ public class Vector {
 	{
 		gl.glColor3f(0.25f, 0.25f, 0.25f);
 		gl.glBegin(GL.GL_LINE_LOOP);
-
+        pointlist=new ArrayList<Point2D.Float>();
+        Point2D.Float p1=new Point2D.Float(xleft,ybottom);
+        Point2D.Float p2=new Point2D.Float(xright,ybottom);
+        Point2D.Float p3=new Point2D.Float(xright,ytop);
+        Point2D.Float p4=new Point2D.Float(xleft,ytop);
+        pointlist.add(p1);
+        pointlist.add(p2);
+        pointlist.add(p3);
+        pointlist.add(p4);
 		gl.glVertex2d(xleft, ybottom);
 		gl.glVertex2d(xright, ybottom);
 		gl.glVertex2d(xright, ytop);

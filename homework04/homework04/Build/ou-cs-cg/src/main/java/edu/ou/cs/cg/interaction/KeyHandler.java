@@ -63,14 +63,15 @@ public final class KeyHandler extends KeyAdapter
 			case KeyEvent.VK_NUMPAD5:
 				p.x = 0.0;	p.y = 0.0;	break;
 
-			case KeyEvent.VK_NUMPAD4:
+			case KeyEvent.VK_4:
 			     view.setContainer(4);
 			
 
 			case KeyEvent.VK_NUMPAD6:
 			
 
-			case KeyEvent.VK_NUMPAD2:
+			case KeyEvent.VK_2:
+			    System.out.println("hey I pressed 2!");
 			     view.setContainer(2); break;
 			case KeyEvent.VK_DOWN:
 				p.x += 0.0;	p.y -= a;	break;
@@ -79,13 +80,13 @@ public final class KeyHandler extends KeyAdapter
 			case KeyEvent.VK_UP:
 				p.x += 0.0;	p.y += a;	break;
 
-			case KeyEvent.VK_NUMPAD1:
+			case KeyEvent.VK_1:
 				view.setContainer(1);	break;
 
 			case KeyEvent.VK_NUMPAD7:
 				p.x -= a;	p.y += a;	break;
 
-			case KeyEvent.VK_NUMPAD3:
+			case KeyEvent.VK_3:
 				view.setContainer(3);	break;
 
 			case KeyEvent.VK_NUMPAD9:
