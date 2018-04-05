@@ -60,37 +60,70 @@ public final class KeyHandler extends KeyAdapter
 
 		switch (e.getKeyCode())
 		{
-			case KeyEvent.VK_NUMPAD5:
+			case KeyEvent.VK_5:
 				p.x = 0.0;	p.y = 0.0;	break;
+			case KeyEvent.VK_2:
+			    //System.out.println("hey I pressed 2!");
+			    view.setContainer(2);
+				Vector newdirection=view.generateRandomDirection();
+				view.setvx(newdirection.dX);
+				view.setvy(newdirection.dY);
+                view.setstartx(-0.8f);
+                view.setstarty(0.0f);
+				view.setcounter(0);
+				view.setcolormagnitude(1.0f);
+			     break;
 
 			case KeyEvent.VK_4:
 			     view.setContainer(4);
+			     newdirection=view.generateRandomDirection();
+				 view.setvx(newdirection.dX);
+				 view.setvy(newdirection.dY);
+                 view.setstartx(-0.8f);
+                 view.setstarty(0.0f);
+				 view.setcounter(0);
+				 view.setcolormagnitude(1.0f);	
+			     break;
 			
 
-			case KeyEvent.VK_NUMPAD6:
+			case KeyEvent.VK_7:
+			    view.setshape(7);
+			    break;
+
+			case KeyEvent.VK_6:
+			    view.setshape(6);
+			    break;
 			
 
-			case KeyEvent.VK_2:
-			    System.out.println("hey I pressed 2!");
-			     view.setContainer(2); break;
-			case KeyEvent.VK_DOWN:
-				p.x += 0.0;	p.y -= a;	break;
 
 			case KeyEvent.VK_NUMPAD8:
-			case KeyEvent.VK_UP:
-				p.x += 0.0;	p.y += a;	break;
+		
 
 			case KeyEvent.VK_1:
-				view.setContainer(1);	break;
-
-			case KeyEvent.VK_NUMPAD7:
-				p.x -= a;	p.y += a;	break;
+				view.setContainer(1);
+				//when container chaneg reset the color magnitude
+				view.setcolormagnitude(1.0f);	
+				break;
 
 			case KeyEvent.VK_3:
-				view.setContainer(3);	break;
+				view.setContainer(3);
+				newdirection=view.generateRandomDirection();
+				view.setvx(newdirection.dX);
+				view.setvy(newdirection.dY);
+                view.setstartx(-0.8f);
+                view.setstarty(0.0f);
+				view.setcounter(0);
+				view.setcolormagnitude(1.0f);	
+				break;
 
-			case KeyEvent.VK_NUMPAD9:
-				p.x += a;	p.y += a;	break;
+			case KeyEvent.VK_9:
+			    view.setshape(9);
+			    break;
+
+			case KeyEvent.VK_8:
+			    view.setshape(8);
+			    break;
+				
 			//slow down
 			case KeyEvent.VK_LEFT:
 				view.setSpeed(view.getSpeed()*0.9f);	break;
@@ -98,6 +131,12 @@ public final class KeyHandler extends KeyAdapter
 			case KeyEvent.VK_RIGHT:
 			    view.setSpeed(view.getSpeed()*1.1f);;	break;
 
+			case KeyEvent.VK_UP:
+			    view.setCommonr(view.getCommonr()*1.41f);
+			    break;
+			case KeyEvent.VK_DOWN:
+			    view.setCommonr(view.getCommonr()/1.41f);
+			    break;
 			case KeyEvent.VK_DELETE:
 				view.clear();
 				return;

@@ -75,14 +75,30 @@ public final class View
     private float currentx=0.0f;
     private float currenty=0.0f;
     private ArrayList<Point2D.Float> pointlist;
+    private ArrayList<Vector> perpenlist;
     //1 is the box, 2 is the regular hexagon ,2 is the 32 hexagon for the circle, 4 is the non-regular one
-    private int container=1; 
+    private int container=1;
+    //the default shape will just be the point itself 
+    private int shape=6;
 
 	private TextRenderer			renderer;
+	//the radisu of the point
+	private float r=0.02f;
+	//private float recr=0.02f;
+	private float commonr=0.02f;
+	//this is to check how far we allow it to go to the boundary of the container.
+	private float threshold=0.02f;
 
 	private Point2D.Double				origin;		// Current origin coordinates
 	private Point2D.Double				cursor;		// Current cursor coordinates
 	private ArrayList<Point2D.Double>	points;		// User's polyline points
+	private ArrayList<Point2D.Float> allpointscontainer;//for all the points on the irregular container.
+	private ArrayList<Point2D.Float> allpointsshape;
+	private float impulseUp=1.1f;
+	private float impulseDown=0.6f;
+	private int bouncecount=0;
+	private float colormagnitude=1.0f;
+	private float diff=0.04f; //since it will disappear in 20 times.
 
 	//**********************************************************************
 	// Constructors and Finalizer
@@ -99,75 +115,8 @@ public final class View
  //       }
 	// }
 
-public class Vector {
 
-   protected float dX;
-   protected float dY;
 
-   // Constructor methods ....
-
-   public Vector() {
-      dX = dY = 0.0f;
-   }
-
-   public Vector( float dX, float dY ) {
-      this.dX = dX;
-      this.dY = dY;
-   }
-
-   // Convert vector to a string ...
-    
-   public String toString() {
-      return "Vector(" + dX + ", " + dY + ")";
-   }
-
-   // Compute magnitude of vector ....
- 
-   public float length() {
-      return (float)Math.sqrt ( dX*dX + dY*dY );
-   }
-
-   // Sum of two vectors ....
-
-   public Vector add( Vector v1 ) {
-       Vector v2 = new Vector( this.dX + v1.dX, this.dY + v1.dY );
-       return v2;
-   }
-
-   // Subtract vector v1 from v .....
-
-   public Vector subv( Vector v1 ) {
-       Vector v2 = new Vector( this.dX - v1.dX, this.dY - v1.dY );
-       return v2;
-   }
-
-   // Scale vector by a constant ...
-
-   public Vector scale( float scaleFactor ) {
-       Vector v2 = new Vector( this.dX*scaleFactor, this.dY*scaleFactor );
-       return v2;
-   }
-
-   // Normalize a vectors length....
-
-   public Vector normalize() {
-      Vector v2 = new Vector();
-
-      float length =(float)Math.sqrt( this.dX*this.dX + this.dY*this.dY );
-      if (length != 0) {
-        v2.dX = this.dX/length;
-        v2.dY = this.dY/length;
-      }
-
-      return v2;
-   }   
-
-   // Dot product of two vectors .....
-
-   public float dotProduct ( Vector v1 ) {
-        return this.dX*v1.dX + this.dY*v1.dY;
-   }
-}
 
 	public View(GLJPanel canvas)
 	{
@@ -193,6 +142,8 @@ public class Vector {
 	// Getters and Setters
 	//**********************************************************************
 
+    
+
 	public int	getWidth()
 	{
 		return w;
@@ -214,6 +165,42 @@ public class Vector {
 		this.origin.y = origin.y;
 		canvas.repaint();
 	}
+	public void setvx(float vx)
+	{
+      this.vx=vx;
+	}
+	public void setstartx(float startx)
+	{
+		this.startx=startx;
+	}
+	public void setstarty(float starty)
+	{
+		this.starty=starty;
+	}
+	public void setvy(float vy)
+	{
+	  this.vy=vy;
+	}
+	public void setCommonr(float commonr)
+	{
+		this.commonr=commonr;
+	}
+	public float getCommonr()
+	{
+        return this.commonr;
+	}
+    public void setcolormagnitude(float colormagnitude)
+    {
+    	this.colormagnitude=colormagnitude;
+    }
+    public void setcounter(int counter)
+    {
+    	this.counter=counter;
+    }
+    public void setshape(int shape)
+    {
+    	this.shape=shape;
+    }
 
 	public Point2D.Double	getCursor()
 	{
@@ -271,15 +258,35 @@ public class Vector {
 
 		renderer = new TextRenderer(new Font("Monospaced", Font.PLAIN, 12),
 									true, true);
+	    //GL2		gl = drawable.getGL().getGL2();
+
 		float vx1=generateRandom();
 		float vy1=generateRandom();
 		float len=(float)Math.sqrt(vx1*vx1+vy1*vy1);
 		//normalize this direction function.
+
 		vx=vx1/len;
 		vy=vy1/len;
 	}
 
     //generate random number from -1 to 1.
+    public Vector generateRandomDirection()
+    {
+    	//within 20 degrees, not make it on the otherside
+    	int randomNum = ThreadLocalRandom.current().nextInt(12, 100);
+    	float tan=(float)(Math.tan(2*3.14f/(randomNum*1.0f)));
+        float tx=1.0f;
+        float ty=tan*tx;
+        float dx=tx/(float)(Math.sqrt(tx*tx+ty*ty));
+        int anotherRandom=ThreadLocalRandom.current().nextInt(0,10);
+        float dy=ty/(float)(Math.sqrt(tx*tx+ty*ty));
+        if(anotherRandom>5)
+        {
+           dy=-1.0f*dy;
+        }
+        
+        return new Vector(dx,dy);
+    }
 	public float generateRandom()
 	{
 		int min=-50;
@@ -298,7 +305,7 @@ public class Vector {
 		updateProjection(drawable);
         GL2		gl = drawable.getGL().getGL2();
        // System.out.println("display has been called a lot of times!");
-        
+      
 		update(drawable);
 		render(drawable,speed,xleft,xright,ybottom,ytop);
 	}
@@ -312,6 +319,16 @@ public class Vector {
 	//**********************************************************************
 	// Private Methods (Viewport)
 	//**********************************************************************
+	 private Vector getPerpenVector(Vector v)
+	 {
+	 	float y1=1.0f;
+	 	float x1=-1.0f*v.dY/v.dX;
+	 	float x=x1/(float)(Math.sqrt(x1*x1+y1*y1));
+	 	float y=y1/(float)(Math.sqrt(x1*x1+y1*y1));
+	 	//also need to make sure teh cross product is product since it is always point inside of the polygon
+	 	return new Vector(x,y);
+
+	 }
 
 	 private Vector getReflectionDirection(Vector incomevec,Vector perpenvec)
 	 {	 	
@@ -331,6 +348,9 @@ public class Vector {
 		float	xmax = (float)(origin.x + 1.0);
 		float	ymin = (float)(origin.y - 1.0);
 		float	ymax = (float)(origin.y + 1.0);
+		gl.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+		//update the color of the canvas.
+        gl.glColor3f(1.0f, 0.0f, 0.0f); 
 
 		gl.glMatrixMode(GL2.GL_PROJECTION);			// Prepare for matrix xform
 		gl.glLoadIdentity();						// Set to identity matrix
@@ -349,16 +369,28 @@ public class Vector {
 	private void	render(GLAutoDrawable drawable, float speed,float xleft, float xright, float ybottom, float ytop)
 	{
 		GL2		gl = drawable.getGL().getGL2();
-		gl.glClear(GL.GL_COLOR_BUFFER_BIT);		// Clear the buffer
-		//System.out.println("container: "+container);
-		if(container==1)
-		{
-		 drawRec(gl);	
-		}
-		else if(container==2)
-		{
+		
+		gl.glClear(GL.GL_COLOR_BUFFER_BIT|GL.GL_DEPTH_BUFFER_BIT);		// Clear the buffer
+
+		switch(container){
+			case 1:
+			drawRec(gl);
+			break;
+
+			case 2:
 			drawSixHex(gl);
+			break;
+
+			case 3:
+			drawThirtyTwoCirle(gl);
+			break;
+
+			case 4:
+			drawIrregularContainer(gl);
+			break;
 		}
+
+
 		movePoint(gl,speed,xleft,xright,ybottom, ytop);
 		//generateRandom();
 		drawBounds(gl);							// Unit bounding box
@@ -379,20 +411,22 @@ public class Vector {
     	//return the index of that intersection side in the list.
     	//(aybx-axby) * (aycx-axcy) > 0;  B and A and C and A
     	//also need B and C and A and C (cybx-cxby)*(cyax-cxay)>0
-    	for (int i=0;i<pointlist.size()-1;i++)
+    	int size=pointlist.size();
+    	for (int i=0;i<size;i++)
     	{
            Point2D.Float p1=pointlist.get(i);
-           Point2D.Float p2=pointlist.get(i+1);
+
+           Point2D.Float p2=pointlist.get((i+1)%size);
            Vector a=new Vector(p1.x-startpoint.x,p1.y-startpoint.y);
            Vector c=new Vector(p2.x-startpoint.x,p2.y-startpoint.y);
            if(checkVectorWithinTwoVectors(startdirection,a,c))
            {
-           	return (i+1);
+           	return (i);
            }
            
     	}
     	//if none, need to return 0.
-    	return 0; 
+    	return 1000; 
 
 
     }
@@ -400,6 +434,87 @@ public class Vector {
     private boolean checkVectorWithinTwoVectors(Vector b, Vector a, Vector c)
     {
       return (a.dY*b.dX-a.dX*b.dY)*(a.dY*c.dX-a.dX*c.dY)>0&&(c.dY*b.dX-c.dX*b.dY)*(c.dY*a.dX-c.dX*a.dY)>0;
+
+    }
+    //draw shapes
+    private void drawPoint(GL2 gl)
+    {
+        gl.glBegin(GL.GL_LINE_LOOP);
+		gl.glColor3f(0.5f, 0.5f, 0.5f);
+	    //the side of this point
+        
+		for (int i=0; i<32; i++)
+		{
+			double	theta = (2.0 * Math.PI) * (i / 32.0);
+
+			gl.glVertex2d(currentx+ r * Math.cos(theta),
+						  currenty + r * Math.sin(theta));
+		}
+		gl.glEnd();
+    }
+
+    //draw rec as a shape
+    private void drawrecshape(GL2 gl,Point2D.Float center)
+    {//colormagnitude
+    	//thsi need to be enabled!
+       	gl.glEnable(GL.GL_BLEND);
+		gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
+    	gl.glColor4f(0.25f, 0.25f, 0.25f,colormagnitude);
+		gl.glBegin(GL.GL_LINE_LOOP);
+        //pointlist=new ArrayList<Point2D.Float>();
+        Point2D.Float p1=new Point2D.Float(center.x-commonr,center.y-commonr);
+        Point2D.Float p2=new Point2D.Float(center.x+commonr,center.y-commonr);
+        Point2D.Float p3=new Point2D.Float(center.x+commonr,center.y+commonr);
+        Point2D.Float p4=new Point2D.Float(center.x-commonr,center.y+commonr);
+		gl.glVertex2d(p1.x, p1.y);
+		gl.glVertex2d(p2.x, p2.y);
+		gl.glVertex2d(p3.x, p3.y);
+		gl.glVertex2d(p4.x, p4.y);
+		gl.glEnd();
+    }
+    //draw a regular polygon as a shape
+    private void drawpolyshape(GL2 gl,Point2D.Float center)
+    {
+    	//thsi need to be enabled!
+       	gl.glEnable(GL.GL_BLEND);
+		gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
+    	gl.glColor4f(0.25f, 0.25f, 0.25f,colormagnitude);
+		gl.glBegin(GL.GL_LINE_LOOP);
+		for (int i=0; i<6; i++)
+		{
+			double	theta = (2.0 * Math.PI) * (i / 6.0);
+
+			gl.glVertex2d(currentx+ commonr * Math.cos(theta),
+						  currenty + commonr * Math.sin(theta));
+		}
+		gl.glEnd();
+    }
+
+    private void drawirregularshape(GL2 gl,Point2D.Float center)
+    {
+    	gl.glEnable(GL.GL_BLEND);
+		gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
+    	gl.glColor4f(0.25f, 0.25f, 0.25f,colormagnitude);
+
+    	allpointsshape=new ArrayList<Point2D.Float>();
+		//perpenlist=new ArrayList<Vector>();
+		Point2D.Float p1=new Point2D.Float(center.x-commonr*.5f,center.y+commonr*0.5f);
+		Point2D.Float p2=new Point2D.Float(center.x,center.y+commonr);
+		Point2D.Float p3=new Point2D.Float(center.x+commonr*.5f,center.y+commonr*.5f);
+		Point2D.Float p4=new Point2D.Float(center.x+commonr,center.y-commonr*0.5f);
+		Point2D.Float p5=new Point2D.Float(center.x-commonr*.5f,center.y-commonr);
+		allpointsshape.add(p1);
+		allpointsshape.add(p2);
+		allpointsshape.add(p3);
+		allpointsshape.add(p4);
+		allpointsshape.add(p5);
+		
+		gl.glBegin(GL.GL_LINE_LOOP);
+		for(int i=0;i<allpointsshape.size();i++)
+		{
+			gl.glVertex2d(allpointsshape.get(i).x,allpointsshape.get(i).y);
+		}
+		gl.glEnd();
 
     }
 
@@ -410,117 +525,447 @@ public class Vector {
         Vector direction=new Vector(vx,vy);
         Point2D.Float startpoint=new Point2D.Float(startx,starty);
     	int index=checkIfReturnAnyIntersection(pointlist,startpoint,direction);
-        System.out.println("index is: "+index);
+        //System.out.println("index is: "+index);
+        switch(shape){
+        	//will be the point
+        	case 6:
+        	drawPoint(gl);
+        	break;
 
-		gl.glBegin(GL.GL_LINE_LOOP);
-		gl.glColor3f(0.5f, 0.5f, 0.5f);
-	    //the side of this point
-        float r=0.02f;
-		for (int i=0; i<32; i++)
+        	case 7:
+        	drawrecshape(gl,new Point2D.Float(currentx,currenty));
+        	break;
+
+        	case 8:
+        	drawpolyshape(gl,new Point2D.Float(currentx,currenty));
+        	break;
+
+        	case 9:
+        	drawirregularshape(gl,new Point2D.Float(currentx,currenty));
+        	break;
+
+
+        }
+	    
+		switch(container)
 		{
-			double	theta = (2.0 * Math.PI) * (i / 32.0);
+			case 1:
+                //bouncecount=0;
 
-			gl.glVertex2d(currentx+ r * Math.cos(theta),
-						  currenty + r * Math.sin(theta));
+					if(currentx+r>=xright)
+		        {
+		        	System.out.println("right boundary");
+		        	//need to normalize this:
+		        	Vector in=new Vector(vx,vy);
+		        	Vector per=new Vector(-1.0f,0.0f);
+		        	Vector out=getReflectionDirection(in,per);
+		        	//change counter=0 and update the direction:
+		        	vx=out.dX;
+		        	vy=out.dY;
+		        	counter=0;
+		        	startx=currentx;
+		        	starty=currenty;
+		        	speed=speed*impulseUp;
+		        	bouncecount++;
+		        	colormagnitude=colormagnitude-diff;
+		        }
+		        else if(currentx-r<=xleft)
+		        {
+		        	System.out.println("left boundary");
+		        	Vector in=new Vector(vx,vy);
+		        	Vector per=new Vector(1.0f,0.0f);
+		        	Vector out=getReflectionDirection(in,per);
+		        	vx=out.dX;
+		        	vy=out.dY;
+		        	counter=0;
+		        	vx=out.dX;
+		        	vy=out.dY;
+		        	counter=0;
+		        	startx=currentx;
+		        	starty=currenty;
+		        	speed=speed*impulseDown;
+		        	bouncecount++;
+		        	colormagnitude=colormagnitude-diff;
+		        }
+		        else if(currenty+r>=ytop)
+		        {
+		        	System.out.println("top boundary");
+		        	Vector in=new Vector(vx,vy);
+		        	Vector per=new Vector(0.0f,-1.0f);
+		        	Vector out=getReflectionDirection(in,per);
+		        	vx=out.dX;
+		        	vy=out.dY;
+		        	counter=0;
+		        	vx=out.dX;
+		        	vy=out.dY;
+		        	counter=0;
+		        	startx=currentx;
+		        	starty=currenty;
+		        	speed=speed*impulseUp;
+		        	bouncecount++;
+		        	colormagnitude=colormagnitude-diff;
+		        }
+		        else if(currenty-r<=ybottom)
+		        {
+		        	System.out.println("bottom boundayr");
+		        	Vector in=new Vector(vx,vy);
+		        	Vector per=new Vector(0.0f,1.0f);
+		        	Vector out=getReflectionDirection(in,per);
+		        	vx=out.dX;
+		        	vy=out.dY;
+		        	counter=0;
+		        	vx=out.dX;
+		        	vy=out.dY;
+		        	counter=0;
+		        	startx=currentx;
+		        	starty=currenty;
+		        	speed=speed*impulseDown;
+		        	bouncecount++;
+		        	colormagnitude=colormagnitude-diff;
+		        }
+		   break;
+
+		   case 2:
+			int index1=checkIfReturnAnyIntersection(pointlist,startpoint,direction);
+	        Vector in1;
+		        for(int i=0;i<6;i++)
+		        {
+		        	if(index1==i)
+		        	{
+		        		if(index1%2==0)
+		        		{
+                          speed=speed*impulseUp;
+		        		}
+		        		else
+		        		{
+		        		  speed=speed*impulseDown;
+		        		}
+		        		Point2D.Float p1=pointlist.get(i);
+					    Point2D.Float p2=pointlist.get((i+1)%6);
+					    Point2D.Float current=new Point2D.Float(currentx, currenty);	    
+				        float distance=getDistanceOfPointToLineSegment(p1,p2,current);
+				        //give it a little bit room to react that why multiply 2.
+				        if(distance<=2*r)
+				        {
+				          in1 =new Vector(vx,vy);
+				          bouncecount++;
+				          colormagnitude=colormagnitude-diff;
+		             	  resetAll(in1,perpenlist.get(i));
+
+				        }
+
+		             	break;
+
+		        	}
+		        }
+		    break;
+
+		    case 3:
+		    	index1=checkIfReturnAnyIntersection(pointlist,startpoint,direction);
+	            //Vector in1;
+		        for(int i=0;i<32;i++)
+		        {
+		        	if(index1==i)
+		        	{
+		        		//impulse up and down
+		        		//when it is even speed up , when it is odd speed down by the factor
+		        		if(index1%2==0)
+		        		{
+                          speed=speed*impulseUp;
+		        		}
+		        		else
+		        		{
+		        		  speed=speed*impulseDown;
+		        		}
+
+		        		Point2D.Float p1=pointlist.get(i);
+					    Point2D.Float p2=pointlist.get((i+1)%32);
+					    Point2D.Float current=new Point2D.Float(currentx, currenty);	    
+				        float distance=getDistanceOfPointToLineSegment(p1,p2,current);
+				        //give it a little bit room to react that why multiply 2.
+				        if(distance<=2*r)
+				        {
+				          in1 =new Vector(vx,vy);
+				          bouncecount++;
+				          colormagnitude=colormagnitude-diff;
+		             	  resetAll(in1,perpenlist.get(i));
+
+				        }
+
+		             	break;
+
+		        	}
+		        }
+		    break;
+
+		    case 4:
+		    	index1=checkIfReturnAnyIntersection(pointlist,startpoint,direction);
+	            //10 points on the irregular
+	            if(index1%2==0)
+		        		{
+                          speed=speed*impulseUp;
+		        		}
+		        		else
+		        		{
+		        		  speed=speed*impulseDown;
+		        		}
+		        for(int i=0;i<10;i++)
+		        {
+		        	if(index1==i)
+		        	{
+		        		Point2D.Float p1=pointlist.get(i);
+					    Point2D.Float p2=pointlist.get((i+1)%10);
+					    Point2D.Float current=new Point2D.Float(currentx, currenty);
+
+				        float distance=getDistanceOfPointToLineSegment(p1,p2,current);
+				        //give it a little bit room to react that why multiply 2.
+				        if(distance<=2*r)
+				        {
+				          in1 =new Vector(vx,vy);
+				          bouncecount++;
+				          colormagnitude=colormagnitude-diff;
+		             	  resetAll(in1,perpenlist.get(i));
+                          
+				        }
+
+		             	break;
+
+		        	}
+		        }
+		    break;
+
 		}
         
-        if(currentx+r>=xright)
-        {
-        	System.out.println("right boundary");
-        	//need to normalize this:
-        	Vector in=new Vector(vx,vy);
-        	Vector per=new Vector(-1.0f,0.0f);
-        	Vector out=getReflectionDirection(in,per);
-        	//change counter=0 and update the direction:
-        	vx=out.dX;
-        	vy=out.dY;
-        	counter=0;
-        	startx=currentx;
-        	starty=currenty;
-        }
-        else if(currentx-r<=xleft)
-        {
-        	System.out.println("left boundary");
-        	Vector in=new Vector(vx,vy);
-        	Vector per=new Vector(1.0f,0.0f);
-        	Vector out=getReflectionDirection(in,per);
-        	vx=out.dX;
-        	vy=out.dY;
-        	counter=0;
-        	vx=out.dX;
-        	vy=out.dY;
-        	counter=0;
-        	startx=currentx;
-        	starty=currenty;
-        }
-        else if(currenty+r>=ytop)
-        {
-        	System.out.println("top boundary");
-        	Vector in=new Vector(vx,vy);
-        	Vector per=new Vector(0.0f,-1.0f);
-        	Vector out=getReflectionDirection(in,per);
-        	vx=out.dX;
-        	vy=out.dY;
-        	counter=0;
-        	vx=out.dX;
-        	vy=out.dY;
-        	counter=0;
-        	startx=currentx;
-        	starty=currenty;
-        }
-        else if(currenty-r<=ybottom)
-        {
-        	System.out.println("bottom boundayr");
-        	Vector in=new Vector(vx,vy);
-        	Vector per=new Vector(0.0f,1.0f);
-        	Vector out=getReflectionDirection(in,per);
-        	vx=out.dX;
-        	vy=out.dY;
-        	counter=0;
-        	vx=out.dX;
-        	vy=out.dY;
-        	counter=0;
-        	startx=currentx;
-        	starty=currenty;
-        }
-		gl.glEnd();
     }
 
    
- 
+    private void resetAll(Vector in, Vector per)
+    {
+    	Vector out=getReflectionDirection(in,per);
+    	vx=out.dX;
+    	vy=out.dY;
+    	counter=0;
+    	startx=currentx;
+    	starty=currenty;
+    }
+    public float crossprodvalue(Vector a, Vector b)
+    {
+    	return (float)Math.abs(a.dX*b.dY-a.dY*b.dX);
+    }
+    
+    public float getDistanceOfPointToLineSegment(Point2D.Float a, Point2D.Float b, Point2D.Float c)
+    {
+    	//a,b is the point of the line segment and c is the moving poirnt
+    	Vector v1=new Vector(b.x-a.x,b.y-a.y);
+    	Vector v2=new Vector(a.x-c.x,a.y-c.y);
+    	return crossprodvalue(v1,v2)/v1.length();
+         
+      
+    }
+    //it will return what is the closest point of the shape that will interact with the intersect line.
+    public Point2D.Float getClosestPointOfSegmentOnTheShape(ArrayList<Point2D.Float> points,Point2D.Float a, Point2D.Float b)
+    {
+    	Point2D.Float closest=points.get(0);
+    	float mindist=getDistanceOfPointToLineSegment(a,b,closest);
+    	for(int i=1;i<points.size();i++)
+    	{
+    		float next=getDistanceOfPointToLineSegment(a,b,points.get(i));
+    		if(next<min)
+    		{
+    			closest=points.get(i);
+    		}
+
+
+    	}
+    	//this will be the closest point interact with the side of the container.
+        return closest;
+
+    }
 	private void drawRec(GL2 gl)
 	{
-		gl.glColor3f(0.25f, 0.25f, 0.25f);
+		//reset the boundcount when a new container is draw
+		bouncecount=0;
+		//colormagnitude=1.0f;
+		gl.glBegin(GL.GL_LINES);
+		gl.glColor3f(0.3f, 0.3f, 0.3f);
+		gl.glVertex2d(xleft, ybottom);
+		gl.glVertex2d(xright, ybottom);
+		gl.glEnd();
+		
 		gl.glBegin(GL.GL_LINE_LOOP);
         pointlist=new ArrayList<Point2D.Float>();
+     
         Point2D.Float p1=new Point2D.Float(xleft,ybottom);
+        
         Point2D.Float p2=new Point2D.Float(xright,ybottom);
+        
         Point2D.Float p3=new Point2D.Float(xright,ytop);
+      
         Point2D.Float p4=new Point2D.Float(xleft,ytop);
         pointlist.add(p1);
         pointlist.add(p2);
         pointlist.add(p3);
         pointlist.add(p4);
+        gl.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        gl.glLineWidth(2);
+        gl.glColor3f(0.1f, 0.1f, 0.1f);
 		gl.glVertex2d(xleft, ybottom);
+		gl.glColor3f(0.3f, 0.3f, 0.3f);
 		gl.glVertex2d(xright, ybottom);
+		gl.glColor3f(0.5f, 0.5f, 0.5f);
 		gl.glVertex2d(xright, ytop);
+		gl.glColor3f(0.7f, 0.7f, 0.7f);
 		gl.glVertex2d(xleft, ytop);
 		//System.out.println("does this get called!");
 
 		gl.glEnd();
 
+
+
+
 	}
 	private void drawSixHex(GL2 gl)
 	{
+		bouncecount=0;
+		//colormagnitude=1.0f;
 		gl.glColor3f(0.25f, 0.25f, 0.25f);
 		gl.glBegin(GL.GL_LINE_LOOP);
+		pointlist=new ArrayList<Point2D.Float>();
+		perpenlist=new ArrayList<Vector>();
 		for (int i=0; i<6; i++)
 		{
 			double	theta = (2.0 * Math.PI) * (i / 6.0);
             //teh radius is 0.8 here.
 			gl.glVertex2d(0 + 0.8f * Math.cos(theta),
 						  0 + 0.8f * Math.sin(theta));
+			Point2D.Float p= new Point2D.Float(0.0f+0.8f * (float)Math.cos(theta),0.0f + 0.8f *(float) Math.sin(theta));
+			pointlist.add(p);
+		
+
 		}
+		gl.glEnd();
+		for(int i=0;i<6;i++)
+		{
+			Point2D.Float p1=pointlist.get(i);
+			Point2D.Float p2=pointlist.get((i+1)%6);
+			Vector in=new Vector(p2.x-p1.x,p2.y-p1.y);
+			Vector perpen=getPerpenVector(in);
+			//System.out.println("perpenx is: "+i+" "+perpen.dX);
+			//System.out.println("perpeny is: "+i+" "+perpen.dY);
+			if(in.dX*perpen.dY-in.dY*perpen.dX>0)
+			{
+				//need to make sure the cross product is positive here.
+				perpenlist.add(perpen);
+
+			}
+			 else
+			 {
+			 	perpenlist.add(perpen.scale(-1.0f));
+			 }
+			
+		}
+	
+	}
+
+	private void drawThirtyTwoCirle(GL2 gl)
+	{
+		bouncecount=0;
+		//colormagnitude=1.0f;
+		gl.glColor3f(0.25f, 0.25f, 0.25f);
+		gl.glBegin(GL.GL_LINE_LOOP);
+		pointlist=new ArrayList<Point2D.Float>();
+		perpenlist=new ArrayList<Vector>();
+		for (int i=0; i<32; i++)
+		{
+			double	theta = (2.0 * Math.PI) * (i / 32.0);
+            //teh radius is 0.8 here.
+			gl.glVertex2d(0 + 0.8f * Math.cos(theta),
+						  0 + 0.8f * Math.sin(theta));
+			Point2D.Float p= new Point2D.Float(0.0f+0.8f * (float)Math.cos(theta),0.0f + 0.8f *(float) Math.sin(theta));
+			pointlist.add(p);
+		}
+		gl.glEnd();
+		for(int i=0;i<32;i++)
+		{
+			Point2D.Float p1=pointlist.get(i);
+			Point2D.Float p2=pointlist.get((i+1)%32);
+			Vector in=new Vector(p2.x-p1.x,p2.y-p1.y);
+			Vector perpen=getPerpenVector(in);
+			//System.out.println("perpenx is: "+i+" "+perpen.dX);
+			//System.out.println("perpeny is: "+i+" "+perpen.dY);
+			if(in.dX*perpen.dY-in.dY*perpen.dX>0)
+			{
+				//need to make sure the cross product is positive here.
+				perpenlist.add(perpen);
+
+			}
+			 else
+			 {
+			 	perpenlist.add(perpen.scale(-1.0f));
+			 }
+			
+		}
+
+	}
+
+	private void drawIrregularContainer(GL2 gl)
+	{
+		bouncecount=0;
+		//colormagnitude=1.0f;
+		//set points
+		pointlist=new ArrayList<Point2D.Float>();
+		perpenlist=new ArrayList<Vector>();
+		Point2D.Float p1=new Point2D.Float(-0.8f,0.0f);
+		Point2D.Float p2=new Point2D.Float(-0.6f,0.2f);
+		Point2D.Float p3=new Point2D.Float(-0.3f,0.5f);
+		Point2D.Float p4=new Point2D.Float(0.0f,0.8f);
+		Point2D.Float p5=new Point2D.Float(0.3f,0.7f);
+		Point2D.Float p6=new Point2D.Float(0.6f,-0.2f);
+		Point2D.Float p7=new Point2D.Float(0.5f,-0.5f);
+		Point2D.Float p8=new Point2D.Float(0.2f,-0.7f);
+		Point2D.Float p9=new Point2D.Float(-0.4f,-0.6f);
+		Point2D.Float p10=new Point2D.Float(-0.7f,-0.2f);
+		pointlist.add(p1);
+		pointlist.add(p2);
+		pointlist.add(p3);
+		pointlist.add(p4);
+		pointlist.add(p5);
+		pointlist.add(p6);
+		pointlist.add(p7);
+		pointlist.add(p8);
+		pointlist.add(p9);
+		pointlist.add(p10);
+		gl.glColor3f(0.25f, 0.25f, 0.25f);
+		gl.glBegin(GL.GL_LINE_LOOP);
+		for(int i=0;i<pointlist.size();i++)
+		{
+			gl.glVertex2d(pointlist.get(i).x,pointlist.get(i).y);
+		}
+		//gl.glVertex2d(xleft, ybottom);
+		
+		gl.glEnd();
+
+		for(int i=0;i<10;i++)
+		{
+			Point2D.Float pa=pointlist.get(i);
+			Point2D.Float pb=pointlist.get((i+1)%10);
+			Vector in=new Vector(pb.x-pa.x,pb.y-pa.y);
+			Vector perpen=getPerpenVector(in);
+			//System.out.println("perpenx is: "+i+" "+perpen.dX);
+			//System.out.println("perpeny is: "+i+" "+perpen.dY);
+			if(in.dX*perpen.dY-in.dY*perpen.dX>0)
+			{
+				//need to make sure the cross product is positive here.
+				perpenlist.add(perpen);
+
+			}
+			 else
+			 {
+			 	perpenlist.add(perpen.scale(-1.0f));
+			 }
+			
+		}
+
 	}
 
 	private void drawBounds(GL2 gl)

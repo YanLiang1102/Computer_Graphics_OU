@@ -52,7 +52,7 @@ public final class Application
 		//GLCanvas		canvas = new GLCanvas(capabilities);
 		GLJPanel		canvas = new GLJPanel(capabilities);
 		JFrame			frame = new JFrame("Application");
-        canvas.setPreferredSize(new Dimension(1280, 720));
+        
 		frame.setBounds(DEFAULT_BOUNDS);
 		frame.getContentPane().add(canvas);
 		frame.setVisible(true);
