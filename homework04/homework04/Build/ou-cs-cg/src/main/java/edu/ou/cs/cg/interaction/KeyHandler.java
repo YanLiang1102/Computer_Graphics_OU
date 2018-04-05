@@ -18,6 +18,7 @@ package edu.ou.cs.cg.interaction;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.*;
+import java.util.*;
 
 //******************************************************************************
 
@@ -72,6 +73,14 @@ public final class KeyHandler extends KeyAdapter
                 view.setstarty(0.0f);
 				view.setcounter(0);
 				view.setcolormagnitude(1.0f);
+			
+				view.colorvector=new ArrayList<Point2D.Float>();
+				for(int i=0;i<6;i++)
+				{
+
+				  view.colorvector.add(new Point2D.Float(1.0f-0.15f*i,0.5f+0.05f*i));
+
+				}
 			     break;
 
 			case KeyEvent.VK_4:
@@ -83,6 +92,13 @@ public final class KeyHandler extends KeyAdapter
                  view.setstarty(0.0f);
 				 view.setcounter(0);
 				 view.setcolormagnitude(1.0f);	
+				 view.colorvector=new ArrayList<Point2D.Float>();
+					for(int i=0;i<10;i++)
+					{
+
+					  view.colorvector.add(new Point2D.Float(1.0f-0.1f*i,0.5f+0.05f*i));
+
+					}
 			     break;
 			
 
@@ -101,6 +117,16 @@ public final class KeyHandler extends KeyAdapter
 
 			case KeyEvent.VK_1:
 				view.setContainer(1);
+				//set the color
+				//colorvector=view.getColorvector();
+				view.colorvector=new ArrayList<Point2D.Float>();
+				for(int i=0;i<4;i++)
+				{
+
+				  view.colorvector.add(new Point2D.Float(1.0f-0.1f*i,0.5f+0.1f*i));
+
+				}
+				
 				//when container chaneg reset the color magnitude
 				view.setcolormagnitude(1.0f);	
 				break;
@@ -113,7 +139,15 @@ public final class KeyHandler extends KeyAdapter
                 view.setstartx(-0.8f);
                 view.setstarty(0.0f);
 				view.setcounter(0);
-				view.setcolormagnitude(1.0f);	
+				view.setcolormagnitude(1.0f);
+				//colorvector=view.getColorvector();
+				view.colorvector=new ArrayList<Point2D.Float>();
+				for(int i=0;i<32;i++)
+				{
+
+				  view.colorvector.add(new Point2D.Float(1.0f-0.03f*i,0.5f+0.01f*i));
+
+				}	
 				break;
 
 			case KeyEvent.VK_9:

@@ -58,7 +58,7 @@ public final class View
 	private int						h;				// Canvas height
 
 	private final KeyHandler		keyHandler;
-	private final MouseHandler		mouseHandler;
+	//private final MouseHandler		mouseHandler;
 
 	private final FPSAnimator		animator;
 	private int						counter = 0;	// Frame display counter
@@ -106,6 +106,8 @@ public final class View
 	private Point2D.Float p11;
 	private Point2D.Float p22;
     private float distance1;
+    public ArrayList<Point2D.Float> colorvector;
+    private Point2D.Float currentcolor;
 
 	//**********************************************************************
 	// Constructors and Finalizer
@@ -142,7 +144,7 @@ public final class View
 
 		// Initialize interaction
 		keyHandler = new KeyHandler(this);
-		mouseHandler = new MouseHandler(this);
+		//mouseHandler = new MouseHandler(this);
 	}
 
 	//**********************************************************************
@@ -274,6 +276,14 @@ public final class View
 
 		vx=vx1/len;
 		vy=vy1/len;
+        colorvector=new ArrayList<Point2D.Float>();
+		for(int i=0;i<4;i++)
+		{
+
+		  colorvector.add(new Point2D.Float(1.0f-0.1f*i,0.5f+0.1f*i));
+
+		}
+		currentcolor=new Point2D.Float(1.0f,1.0f);
 	}
 
     //generate random number from -1 to 1.
@@ -401,10 +411,10 @@ public final class View
 		movePoint(gl,speed,xleft,xright,ybottom, ytop);
 		//generateRandom();
 		drawBounds(gl);							// Unit bounding box
-		drawAxes(gl);							// X and Y axes
-	    drawCursor(gl);							// Crosshairs at mouse location
-	    drawCursorCoordinates(drawable);		// Draw some text
-	    drawPolyline(gl);						// Draw the user's sketch
+		//drawAxes(gl);							// X and Y axes
+	    //drawCursor(gl);							// Crosshairs at mouse location
+	    //drawCursorCoordinates(drawable);		// Draw some text
+	    //drawPolyline(gl);						// Draw the user's sketch
 	    
 	}
 
@@ -466,24 +476,12 @@ public final class View
     	//thsi need to be enabled!
        	gl.glEnable(GL.GL_BLEND);
 		gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
-    	gl.glColor4f(0.25f, 0.25f, 0.25f,colormagnitude);
+    	gl.glColor4f(currentcolor.x, currentcolor.y, 0.8f,colormagnitude);
 		gl.glBegin(GL.GL_LINE_LOOP);
-        //pointlist=new ArrayList<Point2D.Float>();
-        // diffvector=new ArrayList<Point2D.Float>();
-        // allpointsshape=new ArrayList<Point2D.Float>();
-        // diffvector.add(new Point2D.Float(-commonr,-commonr));
-        // diffvector.add(new Point2D.Float(commonr,-commonr));
-        // diffvector.add(new Point2D.Float(commonr,commonr));
-        // diffvector.add(new Point2D.Float(-commonr,commonr));
         Point2D.Float p1=new Point2D.Float(center.x-commonr,center.y-commonr);
         Point2D.Float p2=new Point2D.Float(center.x+commonr,center.y-commonr);
         Point2D.Float p3=new Point2D.Float(center.x+commonr,center.y+commonr);
         Point2D.Float p4=new Point2D.Float(center.x-commonr,center.y+commonr);
-        // allpointsshape.add(p1);
-        // allpointsshape.add(p2);
-        // allpointsshape.add(p3);
-        // allpointsshape.add(p4);
-
 		gl.glVertex2d(p1.x, p1.y);
 		gl.glVertex2d(p2.x, p2.y);
 		gl.glVertex2d(p3.x, p3.y);
@@ -496,7 +494,7 @@ public final class View
     	//thsi need to be enabled!
        	gl.glEnable(GL.GL_BLEND);
 		gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
-    	gl.glColor4f(0.25f, 0.25f, 0.25f,colormagnitude);
+    	gl.glColor4f(currentcolor.x, currentcolor.y, 0.8f,colormagnitude);
 		gl.glBegin(GL.GL_LINE_LOOP);
 		for (int i=0; i<6; i++)
 		{
@@ -512,7 +510,7 @@ public final class View
     {
     	gl.glEnable(GL.GL_BLEND);
 		gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
-    	gl.glColor4f(0.25f, 0.25f, 0.25f,colormagnitude);
+    	gl.glColor4f(currentcolor.x, currentcolor.y, 0.8f,colormagnitude);
 
     	allpointsshape=new ArrayList<Point2D.Float>();
 		//perpenlist=new ArrayList<Vector>();
@@ -586,6 +584,7 @@ public final class View
 		        	speed=speed*impulseUp;
 		        	bouncecount++;
 		        	colormagnitude=colormagnitude-diff;
+		        	currentcolor=colorvector.get(1);
 		        }
 		        else if(currentx-r<=xleft)
 		        {
@@ -604,6 +603,7 @@ public final class View
 		        	speed=speed*impulseDown;
 		        	bouncecount++;
 		        	colormagnitude=colormagnitude-diff;
+		        	currentcolor=colorvector.get(3);
 		        }
 		        else if(currenty+r>=ytop)
 		        {
@@ -622,6 +622,7 @@ public final class View
 		        	speed=speed*impulseUp;
 		        	bouncecount++;
 		        	colormagnitude=colormagnitude-diff;
+		        	currentcolor=colorvector.get(2);
 		        }
 		        else if(currenty-r<=ybottom)
 		        {
@@ -640,12 +641,14 @@ public final class View
 		        	speed=speed*impulseDown;
 		        	bouncecount++;
 		        	colormagnitude=colormagnitude-diff;
+		        	currentcolor=colorvector.get(0);
 		        }
 		   break;
 
 		   case 2:
 			int index1=checkIfReturnAnyIntersection(pointlist,startpoint,direction);
 	        Vector in1;
+	        //currentcolor=colorvector.get(index1);
 		
 		        		if(index1%2==0)
 		        		{
@@ -666,6 +669,7 @@ public final class View
 				          bouncecount++;
 				          colormagnitude=colormagnitude-diff;
 		             	  resetAll(in1,perpenlist.get(index1));
+		             	  currentcolor=colorvector.get(index1);
 
 				        }
 
@@ -673,6 +677,7 @@ public final class View
 
 		    case 3:
 		    	index1=checkIfReturnAnyIntersection(pointlist,startpoint,direction);
+		    	//currentcolor=colorvector.get(index1);
 	            //Vector in1;
 		        // for(int i=0;i<32;i++)
 		        // {
@@ -700,6 +705,7 @@ public final class View
 				          bouncecount++;
 				          colormagnitude=colormagnitude-diff;
 		             	  resetAll(in1,perpenlist.get(index1));
+		             	  currentcolor=colorvector.get(index1);
 
 				        }
 
@@ -711,6 +717,7 @@ public final class View
 
 		    case 4:
 		    	 index1=checkIfReturnAnyIntersection(pointlist,startpoint,direction);
+		    	 //currentcolor=colorvector.get(index1);
 		    	 //System.out.println("the bounce side index is: "+index1);
 		    	 //int closestindex=getClosestPointOfSegmentOnTheShape(allpointsshape,pointlist.get(index1),pointlist.get(index1+1));
 		    	 //System.out.println("the closest point is: "+closestindex);
@@ -738,7 +745,8 @@ public final class View
 				          in1 =new Vector(vx,vy);
 				          bouncecount++;
 				          colormagnitude=colormagnitude-diff;
-		             	  resetAll(in1,perpenlist.get(index1));		       
+		             	  resetAll(in1,perpenlist.get(index1));		
+		             	  currentcolor=colorvector.get(index1);       
 				        }
 		    break;
 
@@ -796,14 +804,14 @@ public final class View
 	{
 		//reset the boundcount when a new container is draw
 		bouncecount=0;
-		//colormagnitude=1.0f;
+
 		gl.glBegin(GL.GL_LINES);
-		gl.glColor3f(0.3f, 0.3f, 0.3f);
-		gl.glVertex2d(xleft, ybottom);
-		gl.glVertex2d(xright, ybottom);
-		gl.glEnd();
+		//gl.glLineWidth(10);
+        gl.glEnable(GL.GL_BLEND);
+		gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
+	    //gl.glColor3f(currentcolor.x,currentcolor.y,0.8f);
+	
 		
-		gl.glBegin(GL.GL_LINE_LOOP);
         pointlist=new ArrayList<Point2D.Float>();
      
         Point2D.Float p1=new Point2D.Float(xleft,ybottom);
@@ -817,39 +825,45 @@ public final class View
         pointlist.add(p2);
         pointlist.add(p3);
         pointlist.add(p4);
-        gl.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-        gl.glLineWidth(2);
-        gl.glColor3f(0.1f, 0.1f, 0.1f);
+        gl.glColor3f(colorvector.get(0).x,colorvector.get(0).y,0.8f);
 		gl.glVertex2d(xleft, ybottom);
-		gl.glColor3f(0.3f, 0.3f, 0.3f);
 		gl.glVertex2d(xright, ybottom);
-		gl.glColor3f(0.5f, 0.5f, 0.5f);
+		gl.glColor3f(colorvector.get(1).x,colorvector.get(1).y,0.8f);
+		gl.glVertex2d(xright, ybottom);
 		gl.glVertex2d(xright, ytop);
-		gl.glColor3f(0.7f, 0.7f, 0.7f);
+		gl.glColor3f(colorvector.get(2).x,colorvector.get(2).y,0.8f);
+	    gl.glVertex2d(xright, ytop);
 		gl.glVertex2d(xleft, ytop);
+		gl.glColor3f(colorvector.get(3).x,colorvector.get(3).y,0.8f);
+		gl.glVertex2d(xleft, ytop);
+		gl.glVertex2d(xleft, ybottom);
 		//System.out.println("does this get called!");
 
 		gl.glEnd();
-
-
-
 
 	}
 	private void drawSixHex(GL2 gl)
 	{
 		bouncecount=0;
 		//colormagnitude=1.0f;
-		gl.glColor3f(0.25f, 0.25f, 0.25f);
-		gl.glBegin(GL.GL_LINE_LOOP);
+		//gl.glColor3f(0.25f, 0.25f, 0.25f);
+
+		gl.glBegin(GL.GL_LINES);
+		gl.glEnable(GL.GL_BLEND);
+		gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
 		pointlist=new ArrayList<Point2D.Float>();
 		perpenlist=new ArrayList<Vector>();
 		for (int i=0; i<6; i++)
 		{
-			double	theta = (2.0 * Math.PI) * (i / 6.0);
+			double	theta1 = (2.0 * Math.PI) * (i / 6.0);
+			double  theta2=(2.0 * Math.PI) * (((i+1)) / 6.0);
             //teh radius is 0.8 here.
-			gl.glVertex2d(0 + 0.8f * Math.cos(theta),
-						  0 + 0.8f * Math.sin(theta));
-			Point2D.Float p= new Point2D.Float(0.0f+0.8f * (float)Math.cos(theta),0.0f + 0.8f *(float) Math.sin(theta));
+            gl.glColor3f(colorvector.get(i).x,colorvector.get(i).y,0.8f);
+			gl.glVertex2d(0 + 0.8f * Math.cos(theta1),
+						  0 + 0.8f * Math.sin(theta1));
+			gl.glVertex2d(0 + 0.8f * Math.cos(theta2),
+						  0 + 0.8f * Math.sin(theta2));
+			Point2D.Float p= new Point2D.Float(0.0f+0.8f * (float)Math.cos(theta1),0.0f + 0.8f *(float) Math.sin(theta1));
 			pointlist.add(p);
 		
 
@@ -880,19 +894,27 @@ public final class View
 
 	private void drawThirtyTwoCirle(GL2 gl)
 	{
-		bouncecount=0;
+		// gl.glEnable(GL.GL_BLEND);
+		// gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
+		// bouncecount=0;
 		//colormagnitude=1.0f;
-		gl.glColor3f(0.25f, 0.25f, 0.25f);
-		gl.glBegin(GL.GL_LINE_LOOP);
+		gl.glBegin(GL.GL_LINES);
+		gl.glEnable(GL.GL_BLEND);
+		gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
+		//gl.glBegin(GL.GL_LINES);
 		pointlist=new ArrayList<Point2D.Float>();
 		perpenlist=new ArrayList<Vector>();
 		for (int i=0; i<32; i++)
 		{
-			double	theta = (2.0 * Math.PI) * (i / 32.0);
+			double	theta1= (2.0 * Math.PI) * (i / 32.0);
+			double	theta2= (2.0 * Math.PI) * ((i+1) / 32.0);
             //teh radius is 0.8 here.
-			gl.glVertex2d(0 + 0.8f * Math.cos(theta),
-						  0 + 0.8f * Math.sin(theta));
-			Point2D.Float p= new Point2D.Float(0.0f+0.8f * (float)Math.cos(theta),0.0f + 0.8f *(float) Math.sin(theta));
+            gl.glColor3f(colorvector.get(i).x,colorvector.get(i).y,0.8f);
+			gl.glVertex2d(0 + 0.8f * Math.cos(theta1),
+						  0 + 0.8f * Math.sin(theta1));
+			gl.glVertex2d(0 + 0.8f * Math.cos(theta2),
+						  0 + 0.8f * Math.sin(theta2));
+			Point2D.Float p= new Point2D.Float(0.0f+0.8f * (float)Math.cos(theta1),0.0f + 0.8f *(float) Math.sin(theta1));
 			pointlist.add(p);
 		}
 		gl.glEnd();
@@ -946,11 +968,14 @@ public final class View
 		pointlist.add(p8);
 		pointlist.add(p9);
 		pointlist.add(p10);
-		gl.glColor3f(0.25f, 0.25f, 0.25f);
-		gl.glBegin(GL.GL_LINE_LOOP);
+		gl.glBegin(GL.GL_LINES);
+		gl.glEnable(GL.GL_BLEND);
+		gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
 		for(int i=0;i<pointlist.size();i++)
 		{
+			gl.glColor3f(colorvector.get(i).x,colorvector.get(i).y,0.8f);
 			gl.glVertex2d(pointlist.get(i).x,pointlist.get(i).y);
+			gl.glVertex2d(pointlist.get((i+1)%10).x,pointlist.get((i+1)%10).y);
 		}
 		//gl.glVertex2d(xleft, ybottom);
 		
