@@ -98,7 +98,14 @@ public final class View
 	private float impulseDown=0.6f;
 	private int bouncecount=0;
 	private float colormagnitude=1.0f;
-	private float diff=0.04f; //since it will disappear in 20 times.
+	private float diff=0.05f; //since it will disappear in 20 times.
+	private Point2D.Float closestpoint;
+	//private Vector diffvector;
+	private ArrayList<Point2D.Float> diffvector;
+	private Point2D.Float current1;
+	private Point2D.Float p11;
+	private Point2D.Float p22;
+    private float distance1;
 
 	//**********************************************************************
 	// Constructors and Finalizer
@@ -462,10 +469,21 @@ public final class View
     	gl.glColor4f(0.25f, 0.25f, 0.25f,colormagnitude);
 		gl.glBegin(GL.GL_LINE_LOOP);
         //pointlist=new ArrayList<Point2D.Float>();
+        // diffvector=new ArrayList<Point2D.Float>();
+        // allpointsshape=new ArrayList<Point2D.Float>();
+        // diffvector.add(new Point2D.Float(-commonr,-commonr));
+        // diffvector.add(new Point2D.Float(commonr,-commonr));
+        // diffvector.add(new Point2D.Float(commonr,commonr));
+        // diffvector.add(new Point2D.Float(-commonr,commonr));
         Point2D.Float p1=new Point2D.Float(center.x-commonr,center.y-commonr);
         Point2D.Float p2=new Point2D.Float(center.x+commonr,center.y-commonr);
         Point2D.Float p3=new Point2D.Float(center.x+commonr,center.y+commonr);
         Point2D.Float p4=new Point2D.Float(center.x-commonr,center.y+commonr);
+        // allpointsshape.add(p1);
+        // allpointsshape.add(p2);
+        // allpointsshape.add(p3);
+        // allpointsshape.add(p4);
+
 		gl.glVertex2d(p1.x, p1.y);
 		gl.glVertex2d(p2.x, p2.y);
 		gl.glVertex2d(p3.x, p3.y);
@@ -628,10 +646,7 @@ public final class View
 		   case 2:
 			int index1=checkIfReturnAnyIntersection(pointlist,startpoint,direction);
 	        Vector in1;
-		        for(int i=0;i<6;i++)
-		        {
-		        	if(index1==i)
-		        	{
+		
 		        		if(index1%2==0)
 		        		{
                           speed=speed*impulseUp;
@@ -640,33 +655,29 @@ public final class View
 		        		{
 		        		  speed=speed*impulseDown;
 		        		}
-		        		Point2D.Float p1=pointlist.get(i);
-					    Point2D.Float p2=pointlist.get((i+1)%6);
-					    Point2D.Float current=new Point2D.Float(currentx, currenty);	    
-				        float distance=getDistanceOfPointToLineSegment(p1,p2,current);
+		        		 p11=pointlist.get(index1);
+					     p22=pointlist.get((index1+1)%6);
+					    current1=new Point2D.Float(currentx, currenty);	    
+				        distance1=getDistanceOfPointToLineSegment(p11,p22,current1);
 				        //give it a little bit room to react that why multiply 2.
-				        if(distance<=2*r)
+				        if(distance1<=2*r)
 				        {
 				          in1 =new Vector(vx,vy);
 				          bouncecount++;
 				          colormagnitude=colormagnitude-diff;
-		             	  resetAll(in1,perpenlist.get(i));
+		             	  resetAll(in1,perpenlist.get(index1));
 
 				        }
 
-		             	break;
-
-		        	}
-		        }
 		    break;
 
 		    case 3:
 		    	index1=checkIfReturnAnyIntersection(pointlist,startpoint,direction);
 	            //Vector in1;
-		        for(int i=0;i<32;i++)
-		        {
-		        	if(index1==i)
-		        	{
+		        // for(int i=0;i<32;i++)
+		        // {
+		        // 	if(index1==i)
+		        // 	{
 		        		//impulse up and down
 		        		//when it is even speed up , when it is odd speed down by the factor
 		        		if(index1%2==0)
@@ -678,30 +689,35 @@ public final class View
 		        		  speed=speed*impulseDown;
 		        		}
 
-		        		Point2D.Float p1=pointlist.get(i);
-					    Point2D.Float p2=pointlist.get((i+1)%32);
-					    Point2D.Float current=new Point2D.Float(currentx, currenty);	    
-				        float distance=getDistanceOfPointToLineSegment(p1,p2,current);
+		        		 p11=pointlist.get(index1);
+					     p22=pointlist.get((index1+1)%32);
+					     current1=new Point2D.Float(currentx, currenty);	    
+				         distance1=getDistanceOfPointToLineSegment(p11,p22,current1);
 				        //give it a little bit room to react that why multiply 2.
-				        if(distance<=2*r)
+				        if(distance1<=2*r)
 				        {
 				          in1 =new Vector(vx,vy);
 				          bouncecount++;
 				          colormagnitude=colormagnitude-diff;
-		             	  resetAll(in1,perpenlist.get(i));
+		             	  resetAll(in1,perpenlist.get(index1));
 
 				        }
 
-		             	break;
+		        //      	break;
 
-		        	}
-		        }
+		        // 	}
+		        // }
 		    break;
 
 		    case 4:
-		    	index1=checkIfReturnAnyIntersection(pointlist,startpoint,direction);
-	            //10 points on the irregular
-	            if(index1%2==0)
+		    	 index1=checkIfReturnAnyIntersection(pointlist,startpoint,direction);
+		    	 //System.out.println("the bounce side index is: "+index1);
+		    	 //int closestindex=getClosestPointOfSegmentOnTheShape(allpointsshape,pointlist.get(index1),pointlist.get(index1+1));
+		    	 //System.out.println("the closest point is: "+closestindex);
+	             //closestpoint=new Point2D.Float(currentx+diffvector.get(closestindex).x,currenty+diffvector.get(closestindex).y);
+                 //closestpoint=allpointsshape.get(closestindex);
+	                    //10 points on the irregular
+	                     if(index1%2==0)
 		        		{
                           speed=speed*impulseUp;
 		        		}
@@ -709,29 +725,21 @@ public final class View
 		        		{
 		        		  speed=speed*impulseDown;
 		        		}
-		        for(int i=0;i<10;i++)
-		        {
-		        	if(index1==i)
-		        	{
-		        		Point2D.Float p1=pointlist.get(i);
-					    Point2D.Float p2=pointlist.get((i+1)%10);
-					    Point2D.Float current=new Point2D.Float(currentx, currenty);
 
-				        float distance=getDistanceOfPointToLineSegment(p1,p2,current);
+		        		p11=pointlist.get(index1);
+					    p22=pointlist.get((index1+1)%10);
+					    current1=new Point2D.Float(currentx, currenty);
+                       // closestpoint=new Point.Float(currentx+diffvector.dX,currenty+diffvector.dY);
+				       // float distance=getDistanceOfPointToLineSegment(p1,p2,closestpoint);
+					    distance1=getDistanceOfPointToLineSegment(p11,p22,current1);
 				        //give it a little bit room to react that why multiply 2.
-				        if(distance<=2*r)
+				        if(distance1<=2*r)
 				        {
 				          in1 =new Vector(vx,vy);
 				          bouncecount++;
 				          colormagnitude=colormagnitude-diff;
-		             	  resetAll(in1,perpenlist.get(i));
-                          
+		             	  resetAll(in1,perpenlist.get(index1));		       
 				        }
-
-		             	break;
-
-		        	}
-		        }
 		    break;
 
 		}
@@ -762,23 +770,26 @@ public final class View
          
       
     }
-    //it will return what is the closest point of the shape that will interact with the intersect line.
-    public Point2D.Float getClosestPointOfSegmentOnTheShape(ArrayList<Point2D.Float> points,Point2D.Float a, Point2D.Float b)
+    //return the index of the point on the allpointshape and then use this to fetch the diffvector to the center, so we
+    //can generate the current closte point facing the bounch edge.
+    public int getClosestPointOfSegmentOnTheShape(ArrayList<Point2D.Float> points,Point2D.Float a, Point2D.Float b)
     {
-    	Point2D.Float closest=points.get(0);
-    	float mindist=getDistanceOfPointToLineSegment(a,b,closest);
-    	for(int i=1;i<points.size();i++)
+    	//Point2D.Float closest=points.get(0);
+    	//float mindist=getDistanceOfPointToLineSegment(a,b,closest);
+    	float mindistance=100.0f;
+    	int bestindex=0;
+    	for(int i=0;i<points.size();i++)
     	{
     		float next=getDistanceOfPointToLineSegment(a,b,points.get(i));
-    		if(next<min)
+    		if(next<mindistance)
     		{
-    			closest=points.get(i);
+    			bestindex=i;
     		}
 
 
     	}
     	//this will be the closest point interact with the side of the container.
-        return closest;
+        return bestindex;
 
     }
 	private void drawRec(GL2 gl)
