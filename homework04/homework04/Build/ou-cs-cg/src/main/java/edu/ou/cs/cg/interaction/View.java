@@ -58,7 +58,7 @@ public final class View
 	private int						h;				// Canvas height
 
 	private final KeyHandler		keyHandler;
-	//private final MouseHandler		mouseHandler;
+	private final MouseHandler		mouseHandler;
 
 	private final FPSAnimator		animator;
 	private int						counter = 0;	// Frame display counter
@@ -89,7 +89,7 @@ public final class View
 	//this is to check how far we allow it to go to the boundary of the container.
 	private float threshold=0.02f;
 
-	private Point2D.Double				origin;		// Current origin coordinates
+	private Point2D.Float			origin;		// Current origin coordinates
 	private Point2D.Double				cursor;		// Current cursor coordinates
 	private ArrayList<Point2D.Double>	points;		// User's polyline points
 	private ArrayList<Point2D.Float> allpointscontainer;//for all the points on the irregular container.
@@ -107,7 +107,12 @@ public final class View
 	private Point2D.Float p22;
     private float distance1;
     public ArrayList<Point2D.Float> colorvector;
+    //need an arraylist of arraylist to handle all the random draw polygons
+    public ArrayList<Point2D.Float> centerlist=new ArrayList<Point2D.Float>();
+    public ArrayList<Integer> counterlist=new ArrayList<Integer>();
+    public ArrayList<Vector> directionlist=new ArrayList<Vector>();
     private Point2D.Float currentcolor;
+
 
 	//**********************************************************************
 	// Constructors and Finalizer
@@ -132,9 +137,9 @@ public final class View
 		this.canvas = canvas;
 
 		// Initialize model
-		origin = new Point2D.Double(0.0, 0.0);
+		origin = new Point2D.Float(0.0f, 0.0f);
 		cursor = null;
-		points = new ArrayList<Point2D.Double>();
+		//points = new ArrayList<Point2D.Float>();
 
 		// Initialize rendering
 		canvas.addGLEventListener(this);
@@ -144,7 +149,7 @@ public final class View
 
 		// Initialize interaction
 		keyHandler = new KeyHandler(this);
-		//mouseHandler = new MouseHandler(this);
+		mouseHandler = new MouseHandler(this);
 	}
 
 	//**********************************************************************
@@ -163,12 +168,13 @@ public final class View
 		return h;
 	}
 
-	public Point2D.Double	getOrigin()
+	public Point2D.Float	getOrigin()
 	{
-		return new Point2D.Double(origin.x, origin.y);
+		return new Point2D.Float(origin.x, origin.y);
 	}
+	
 
-	public void		setOrigin(Point2D.Double origin)
+	public void		setOrigin(Point2D.Float origin)
 	{
 		this.origin.x = origin.x;
 		this.origin.y = origin.y;
@@ -326,6 +332,19 @@ public final class View
 		update(drawable);
 		render(drawable,speed,xleft,xright,ybottom,ytop);
 	}
+	public void drawrandom(Point2D.Float center,GL2 gl)
+	{
+		//GL2 gl = drawable.getGL().getGL2();
+		gl.glBegin(GL.GL_LINE_LOOP);;
+		for (int i=0; i<6; i++)
+		{
+			double	theta1 = (2.0 * Math.PI) * (i / 6.0);
+			gl.glVertex2d(center.x + 0.1f * Math.cos(theta1),
+						  center.y + 0.1f * Math.sin(theta1));
+			Point2D.Float p= new Point2D.Float(0.0f+0.8f * (float)Math.cos(theta1),0.0f + 0.8f *(float) Math.sin(theta1));
+		}
+		gl.glEnd();
+	}
 
 	public void		reshape(GLAutoDrawable drawable, int x, int y, int w, int h)
 	{
@@ -415,6 +434,17 @@ public final class View
 	    //drawCursor(gl);							// Crosshairs at mouse location
 	    //drawCursorCoordinates(drawable);		// Draw some text
 	    //drawPolyline(gl);						// Draw the user's sketch
+	    // for (int i=0;i<centerlist.size();i++)
+	    // {
+	    // 	Point2D.Float currentp=centerlist.get(i);
+	    // 	drawrandom(currentp,gl);
+	    // 	int currentcounter=counterlist.get(i);
+	    // 	Vector dir=directionlist.get(i);
+	    // 	centerlist.set(i,new Point2D.Float(currentp.x+currentcounter*dir.dX*0.0005f,currentp.y+currentcounter*dir.dY*0.0005f));
+	    // 	counterlist.set(i,currentcounter+1);
+
+	    // }
+
 	    
 	}
 
@@ -560,7 +590,6 @@ public final class View
         	drawirregularshape(gl,new Point2D.Float(currentx,currenty));
         	break;
 
-
         }
 	    
 		switch(container)
@@ -646,111 +675,199 @@ public final class View
 		   break;
 
 		   case 2:
-			int index1=checkIfReturnAnyIntersection(pointlist,startpoint,direction);
-	        Vector in1;
-	        //currentcolor=colorvector.get(index1);
-		
-		        		if(index1%2==0)
-		        		{
-                          speed=speed*impulseUp;
-		        		}
-		        		else
-		        		{
-		        		  speed=speed*impulseDown;
-		        		}
-		        		 p11=pointlist.get(index1);
-					     p22=pointlist.get((index1+1)%6);
-					    current1=new Point2D.Float(currentx, currenty);	    
-				        distance1=getDistanceOfPointToLineSegment(p11,p22,current1);
-				        //give it a little bit room to react that why multiply 2.
-				        if(distance1<=2*r)
-				        {
-				          in1 =new Vector(vx,vy);
-				          bouncecount++;
-				          colormagnitude=colormagnitude-diff;
-		             	  resetAll(in1,perpenlist.get(index1));
-		             	  currentcolor=colorvector.get(index1);
+				int index1=checkIfReturnAnyIntersection(pointlist,startpoint,direction);
+		        Vector in1;
+			
+	    		if(index1%2==0)
+	    		{
+	              speed=speed*impulseUp;
+	    		}
+	    		else
+	    		{
+	    		  speed=speed*impulseDown;
+	    		}
+	    		 p11=pointlist.get(index1);
+			     p22=pointlist.get((index1+1)%6);
+			    current1=new Point2D.Float(currentx, currenty);	    
+		        distance1=getDistanceOfPointToLineSegment(p11,p22,current1);
+		        //give it a little bit room to react that why multiply 2.
+		        if(distance1<=2*r)
+		        {
+		          in1 =new Vector(vx,vy);
+		          bouncecount++;
+		          colormagnitude=colormagnitude-diff;
+	         	  resetAll(in1,perpenlist.get(index1));
+	         	  currentcolor=colorvector.get(index1);
 
-				        }
+		        }
 
-		    break;
+			    break;
 
 		    case 3:
 		    	index1=checkIfReturnAnyIntersection(pointlist,startpoint,direction);
-		    	//currentcolor=colorvector.get(index1);
-	            //Vector in1;
-		        // for(int i=0;i<32;i++)
-		        // {
-		        // 	if(index1==i)
-		        // 	{
-		        		//impulse up and down
-		        		//when it is even speed up , when it is odd speed down by the factor
-		        		if(index1%2==0)
-		        		{
-                          speed=speed*impulseUp;
-		        		}
-		        		else
-		        		{
-		        		  speed=speed*impulseDown;
-		        		}
+        		if(index1%2==0)
+        		{
+                  speed=speed*impulseUp;
+        		}
+        		else
+        		{
+        		  speed=speed*impulseDown;
+        		}
 
-		        		 p11=pointlist.get(index1);
-					     p22=pointlist.get((index1+1)%32);
-					     current1=new Point2D.Float(currentx, currenty);	    
-				         distance1=getDistanceOfPointToLineSegment(p11,p22,current1);
-				        //give it a little bit room to react that why multiply 2.
-				        if(distance1<=2*r)
-				        {
-				          in1 =new Vector(vx,vy);
-				          bouncecount++;
-				          colormagnitude=colormagnitude-diff;
-		             	  resetAll(in1,perpenlist.get(index1));
-		             	  currentcolor=colorvector.get(index1);
+        		 p11=pointlist.get(index1);
+			     p22=pointlist.get((index1+1)%32);
+			     current1=new Point2D.Float(currentx, currenty);	    
+		         distance1=getDistanceOfPointToLineSegment(p11,p22,current1);
+		        //give it a little bit room to react that why multiply 2.
+		        if(distance1<=2*r)
+		        {
+		          in1 =new Vector(vx,vy);
+		          bouncecount++;
+		          colormagnitude=colormagnitude-diff;
+             	  resetAll(in1,perpenlist.get(index1));
+             	  currentcolor=colorvector.get(index1);
 
-				        }
-
-		        //      	break;
-
-		        // 	}
-		        // }
-		    break;
+		        }
+		       break;
 
 		    case 4:
 		    	 index1=checkIfReturnAnyIntersection(pointlist,startpoint,direction);
-		    	 //currentcolor=colorvector.get(index1);
-		    	 //System.out.println("the bounce side index is: "+index1);
-		    	 //int closestindex=getClosestPointOfSegmentOnTheShape(allpointsshape,pointlist.get(index1),pointlist.get(index1+1));
-		    	 //System.out.println("the closest point is: "+closestindex);
-	             //closestpoint=new Point2D.Float(currentx+diffvector.get(closestindex).x,currenty+diffvector.get(closestindex).y);
-                 //closestpoint=allpointsshape.get(closestindex);
-	                    //10 points on the irregular
-	                     if(index1%2==0)
-		        		{
-                          speed=speed*impulseUp;
-		        		}
-		        		else
-		        		{
-		        		  speed=speed*impulseDown;
-		        		}
 
-		        		p11=pointlist.get(index1);
-					    p22=pointlist.get((index1+1)%10);
-					    current1=new Point2D.Float(currentx, currenty);
-                       // closestpoint=new Point.Float(currentx+diffvector.dX,currenty+diffvector.dY);
-				       // float distance=getDistanceOfPointToLineSegment(p1,p2,closestpoint);
-					    distance1=getDistanceOfPointToLineSegment(p11,p22,current1);
-				        //give it a little bit room to react that why multiply 2.
-				        if(distance1<=2*r)
-				        {
-				          in1 =new Vector(vx,vy);
-				          bouncecount++;
-				          colormagnitude=colormagnitude-diff;
-		             	  resetAll(in1,perpenlist.get(index1));		
-		             	  currentcolor=colorvector.get(index1);       
-				        }
-		    break;
+                 if(index1%2==0)
+        		{
+                  speed=speed*impulseUp;
+        		}
+        		else
+        		{
+        		  speed=speed*impulseDown;
+        		}
+
+        		p11=pointlist.get(index1);
+			    p22=pointlist.get((index1+1)%10);
+			    current1=new Point2D.Float(currentx, currenty);
+               // closestpoint=new Point.Float(currentx+diffvector.dX,currenty+diffvector.dY);
+		       // float distance=getDistanceOfPointToLineSegment(p1,p2,closestpoint);
+			    distance1=getDistanceOfPointToLineSegment(p11,p22,current1);
+		        //give it a little bit room to react that why multiply 2.
+		        if(distance1<=2*r)
+		        {
+		          in1 =new Vector(vx,vy);
+		          bouncecount++;
+		          colormagnitude=colormagnitude-diff;
+             	  resetAll(in1,perpenlist.get(index1));		
+             	  currentcolor=colorvector.get(index1);       
+		        }
+		       break;
+
+
 
 		}
+	    for (int i=0;i<centerlist.size();i++)
+	    {
+	    	
+	    	
+	     // if(container==1)
+	    	// {
+	    	// 	  if(currentp.x+r>=xright)
+		    //     {
+		    //     	//System.out.println("right boundary");
+		    //     	//need to normalize this:
+		    //     	//Vector in=new Vector(vx,vy);
+		    //     	Vector per=new Vector(-1.0f,0.0f);
+		    //     	Vector out=getReflectionDirection(dir,per);
+		    //     	//change counter=0 and update the direction:
+		    //     	//Vector out=getReflectionDirection(in,per);
+			   //  	directionlist.set(i,new Vector(out.dX,out.dY));
+			   //  	counterlist.set(i,1);
+			   //  	centerlist.set(i,new Point2D.Float(currentp.x,currentp.y));
+		    //     	//resetrandom(dir,per,i,currentp.x,currentp.y);
+		    //     }
+		    //     else if(currentp.x-r<=xleft)
+		    //     {
+		    //     	//System.out.println("left boundary");
+		    //     	//Vector in=new Vector(vx,vy);
+		    //     	Vector per=new Vector(1.0f,0.0f);
+		    //     	Vector out=getReflectionDirection(dir,per);
+
+		    //     	directionlist.set(i,new Vector(out.dX,out.dY));
+			   //  	counterlist.set(i,1);
+			   //  	centerlist.set(i,new Point2D.Float(currentp.x,currentp.y));
+		    //     	//resetrandom(dir,per,i,currentp.x,currentp.y);
+		    //     	// vx=out.dX;
+		    //     	// vy=out.dY;
+		    //     	// counter=0;
+		    //     	// vx=out.dX;
+		    //     	// vy=out.dY;
+		    //     	// counter=0;
+		    //     	// startx=currentx;
+		    //     	// starty=currenty;
+		    //     	// speed=speed*impulseDown;
+		    //     	// bouncecount++;
+		    //     	// colormagnitude=colormagnitude-diff;
+		    //     	// currentcolor=colorvector.get(3);
+		    //     }
+		    //     else if(currentp.y+r>=ytop)
+		    //     {
+		    //     	//System.out.println("top boundary");
+		    //     	//Vector in=new Vector(vx,vy);
+		    //     	Vector per=new Vector(0.0f,-1.0f);
+		    //     	Vector out=getReflectionDirection(dir,per);
+		    //     	// vx=out.dX;
+		    //     	// vy=out.dY;
+		    //     	// counter=0;
+		    //     	// vx=out.dX;
+		    //     	// vy=out.dY;
+		    //     	// counter=0;
+		    //     	// startx=currentx;
+		    //     	// starty=currenty;
+		    //     	// speed=speed*impulseUp;
+		    //     	// bouncecount++;
+		    //     	// colormagnitude=colormagnitude-diff;
+		    //     	// currentcolor=colorvector.get(2);
+		    //     	//resetrandom(dir,per,i,currentp.x,currentp.y);
+		    //     	directionlist.set(i,new Vector(out.dX,out.dY));
+			   //  	counterlist.set(i,1);
+			   //  	centerlist.set(i,new Point2D.Float(currentp.x,currentp.y));
+		    //     }
+		    //     else if(currentp.y-r<=ybottom)
+		    //     {
+		    //     	//System.out.println("bottom boundayr");
+		    //     	//Vector in=new Vector(vx,vy);
+		    //     	Vector per=new Vector(0.0f,1.0f);
+		    //     	Vector out=getReflectionDirection(dir,per);
+		    //     	// vx=out.dX
+		    //     	directionlist.set(i,new Vector(out.dX,out.dY));
+			   //  	counterlist.set(i,1);
+			   //  	centerlist.set(i,new Point2D.Float(currentp.x,currentp.y));
+		    //     }
+	    	// }
+	    	 if(container==2||container==3||container==4)
+	    	{
+		    	Point2D.Float currentp=centerlist.get(i);
+		    	//gl.glClearColor(1.0f,1.0f,1.0f,1.0f);
+		    	drawrandom(currentp,gl);
+		    	int currentcounter=counterlist.get(i);
+		    	Vector dir=directionlist.get(i);
+		    	//System.out.println("current counter: "+currentcounter);
+		    	centerlist.set(i,new Point2D.Float(currentp.x+currentcounter*dir.dX*0.0005f,currentp.y+currentcounter*dir.dY*0.0005f));
+		    	counterlist.set(i,currentcounter+1);
+
+				int index1=checkIfReturnAnyIntersection(pointlist,currentp,dir);
+		        Vector in1;
+	    		 p11=pointlist.get(index1);
+
+			     p22=pointlist.get((index1+1)%pointlist.size());
+			   // current1=new Point2D.Float(currentx, currenty);	    
+		        distance1=getDistanceOfPointToLineSegment(p11,p22,currentp);
+		        //give it a little bit room to react that why multiply 2.
+		        if(distance1<=2*r)
+		        {
+                  resetrandom(dir,perpenlist.get(index1),i,currentp.x,currentp.y);
+		        }
+
+	    	}
+
+	    }
         
     }
 
@@ -764,6 +881,16 @@ public final class View
     	startx=currentx;
     	starty=currenty;
     }
+    private void resetrandom(Vector in, Vector per, int index,float currentx,float currenty)
+    {   
+    	Vector out=getReflectionDirection(in,per);
+    	directionlist.set(index,new Vector(out.dX,out.dY));
+    	counterlist.set(index,0);
+    	centerlist.set(index,new Point2D.Float(currentx,currenty));
+
+
+    }
+
     public float crossprodvalue(Vector a, Vector b)
     {
     	return (float)Math.abs(a.dX*b.dY-a.dY*b.dX);

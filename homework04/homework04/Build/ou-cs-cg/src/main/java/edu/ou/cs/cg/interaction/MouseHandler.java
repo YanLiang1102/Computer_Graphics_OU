@@ -57,24 +57,23 @@ public final class MouseHandler extends MouseAdapter
 
 	public void		mouseClicked(MouseEvent e)
 	{
-		Point2D.Double	v = calcCoordinatesInView(e.getX(), e.getY());
-
-		if (Utilities.isShiftDown(e))
-			view.setOrigin(v);
-		else
-			view.add(v);
+		Point2D.Float	v = calcCoordinatesInView(e.getX(), e.getY());
+        view.centerlist.add(v);
+        view.counterlist.add(0);
+        view.directionlist.add(view.generateRandomDirection());
+	   // view.drawrandom(v);
 	}
 
 	public void		mouseEntered(MouseEvent e)
 	{
-		Point2D.Double	v = calcCoordinatesInView(e.getX(), e.getY());
+		// Point2D.Double	v = calcCoordinatesInView(e.getX(), e.getY());
 
-		view.setCursor(v);
+		// view.setCursor(v);
 	}
 
 	public void		mouseExited(MouseEvent e)
 	{
-		view.setCursor(null);
+		//view.setCursor(null);
 	}
 
 	public void		mousePressed(MouseEvent e)
@@ -91,17 +90,18 @@ public final class MouseHandler extends MouseAdapter
 
 	public void		mouseDragged(MouseEvent e)
 	{
-		Point2D.Double	v = calcCoordinatesInView(e.getX(), e.getY());
+		 Point2D.Float v = calcCoordinatesInView(e.getX(), e.getY());
 
-		view.add(v);
-		view.setCursor(v);
+
+		// view.add(v);
+		// view.setCursor(v);
 	}
 
 	public void		mouseMoved(MouseEvent e)
 	{
-		Point2D.Double	v = calcCoordinatesInView(e.getX(), e.getY());
+		//Point2D.Double	v = calcCoordinatesInView(e.getX(), e.getY());
 
-		view.setCursor(v);
+		//view.setCursor(v);
 	}
 
 	//**********************************************************************
@@ -116,15 +116,15 @@ public final class MouseHandler extends MouseAdapter
 	// Private Methods
 	//**********************************************************************
 
-	private Point2D.Double	calcCoordinatesInView(int sx, int sy)
+	private Point2D.Float	calcCoordinatesInView(int sx, int sy)
 	{
 		int				w = view.getWidth();
 		int				h = view.getHeight();
-		Point2D.Double	p = view.getOrigin();
-		double			vx = p.x + (sx * 2.0) / w - 1.0;
-		double			vy = p.y - (sy * 2.0) / h + 1.0;
+		Point2D.Float	p = view.getOrigin();
+		float			vx = p.x + (sx * 2.0f) / w - 1.0f;
+		float		vy = p.y - (sy * 2.0f) / h + 1.0f;
 
-		return new Point2D.Double(vx, vy);
+		return new Point2D.Float(vx, vy);
 	}
 }
 

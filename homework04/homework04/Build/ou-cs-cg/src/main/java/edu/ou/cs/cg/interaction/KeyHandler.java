@@ -56,13 +56,13 @@ public final class KeyHandler extends KeyAdapter
 
 	public void		keyPressed(KeyEvent e)
 	{
-		Point2D.Double	p = view.getOrigin();
+		Point2D.Float	p = view.getOrigin();
 		double			a = (Utilities.isShiftDown(e) ? 0.01 : 0.1);
 
 		switch (e.getKeyCode())
 		{
 			case KeyEvent.VK_5:
-				p.x = 0.0;	p.y = 0.0;	break;
+					break;
 			case KeyEvent.VK_2:
 			    //System.out.println("hey I pressed 2!");
 			    view.setContainer(2);
