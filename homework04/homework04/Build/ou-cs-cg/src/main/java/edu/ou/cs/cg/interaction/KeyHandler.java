@@ -62,10 +62,11 @@ public final class KeyHandler extends KeyAdapter
 		switch (e.getKeyCode())
 		{
 			case KeyEvent.VK_5:
+			//nothing for thsi button
 					break;
 			case KeyEvent.VK_2:
-			    //System.out.println("hey I pressed 2!");
 			    view.setContainer(2);
+			    //reset the stuff 
 				Vector newdirection=view.generateRandomDirection();
 				view.setvx(newdirection.dX);
 				view.setvy(newdirection.dY);
@@ -73,7 +74,6 @@ public final class KeyHandler extends KeyAdapter
                 view.setstarty(0.0f);
 				view.setcounter(0);
 				view.setcolormagnitude(1.0f);
-			
 				view.colorvector=new ArrayList<Point2D.Float>();
 				for(int i=0;i<6;i++)
 				{
@@ -117,12 +117,10 @@ public final class KeyHandler extends KeyAdapter
 
 			case KeyEvent.VK_1:
 				view.setContainer(1);
-				//set the color
-				//colorvector=view.getColorvector();
 				view.colorvector=new ArrayList<Point2D.Float>();
 				for(int i=0;i<4;i++)
 				{
-
+                  //set the vector color for the side of thsi regtangualr
 				  view.colorvector.add(new Point2D.Float(1.0f-0.1f*i,0.5f+0.1f*i));
 
 				}

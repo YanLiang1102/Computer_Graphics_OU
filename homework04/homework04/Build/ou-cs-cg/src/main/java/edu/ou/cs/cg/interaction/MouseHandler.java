@@ -57,6 +57,7 @@ public final class MouseHandler extends MouseAdapter
 
 	public void		mouseClicked(MouseEvent e)
 	{
+		//when click on the mouse, update the arraylist of centers, direction vectors and the counters.
 		Point2D.Float	v = calcCoordinatesInView(e.getX(), e.getY());
         view.centerlist.add(v);
         view.counterlist.add(0);

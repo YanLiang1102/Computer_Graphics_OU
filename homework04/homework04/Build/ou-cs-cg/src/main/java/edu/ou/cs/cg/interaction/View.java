@@ -108,26 +108,11 @@ public final class View
     private float distance1;
     public ArrayList<Point2D.Float> colorvector;
     //need an arraylist of arraylist to handle all the random draw polygons
+    //the following 3 lines are handle the stuff for the randomly created shape from the mouse click
     public ArrayList<Point2D.Float> centerlist=new ArrayList<Point2D.Float>();
     public ArrayList<Integer> counterlist=new ArrayList<Integer>();
     public ArrayList<Vector> directionlist=new ArrayList<Vector>();
     private Point2D.Float currentcolor;
-
-
-	//**********************************************************************
-	// Constructors and Finalizer
-	//**********************************************************************
-	// public class Vector()
-	// {
-	//    public float x;
-	//    public float y;
-
- //       public Vector(float x, float y)
- //       {
- //       	this.x=x;
- //       	this.y=y;
- //       }
-	// }
 
 
 
@@ -355,6 +340,7 @@ public final class View
 	//**********************************************************************
 	// Private Methods (Viewport)
 	//**********************************************************************
+	//get the perpendicualr vector based on ths input vector
 	 private Vector getPerpenVector(Vector v)
 	 {
 	 	float y1=1.0f;
@@ -365,6 +351,10 @@ public final class View
 	 	return new Vector(x,y);
 
 	 }
+
+	 //based on teh formula in book , this is to get the reflection vector based on in vector and 
+	 //perpendicualr vector, also need to use cross prodcut to make sure the vector need to point to 
+	 //the interor of the polygon.
 
 	 private Vector getReflectionDirection(Vector incomevec,Vector perpenvec)
 	 {	 	
@@ -430,20 +420,6 @@ public final class View
 		movePoint(gl,speed,xleft,xright,ybottom, ytop);
 		//generateRandom();
 		drawBounds(gl);							// Unit bounding box
-		//drawAxes(gl);							// X and Y axes
-	    //drawCursor(gl);							// Crosshairs at mouse location
-	    //drawCursorCoordinates(drawable);		// Draw some text
-	    //drawPolyline(gl);						// Draw the user's sketch
-	    // for (int i=0;i<centerlist.size();i++)
-	    // {
-	    // 	Point2D.Float currentp=centerlist.get(i);
-	    // 	drawrandom(currentp,gl);
-	    // 	int currentcounter=counterlist.get(i);
-	    // 	Vector dir=directionlist.get(i);
-	    // 	centerlist.set(i,new Point2D.Float(currentp.x+currentcounter*dir.dX*0.0005f,currentp.y+currentcounter*dir.dY*0.0005f));
-	    // 	counterlist.set(i,currentcounter+1);
-
-	    // }
 
 	    
 	}
@@ -478,6 +454,7 @@ public final class View
 
     }
     //use the cross product property to check this, check if b is with in vector a and c
+    //thsi is used to know which edge the shape is going to hit before hand
     private boolean checkVectorWithinTwoVectors(Vector b, Vector a, Vector c)
     {
       return (a.dY*b.dX-a.dX*b.dY)*(a.dY*c.dX-a.dX*c.dY)>0&&(c.dY*b.dX-c.dX*b.dY)*(c.dY*a.dX-c.dX*a.dY)>0;
@@ -563,7 +540,7 @@ public final class View
 		gl.glEnd();
 
     }
-
+    //this is to handle the dynamically movement of the point
     private void movePoint(GL2 gl, float speed,float xleft, float xright, float ybottom, float ytop)
     {
     	currentx=startx+counter*speed*vx;
@@ -571,7 +548,7 @@ public final class View
         Vector direction=new Vector(vx,vy);
         Point2D.Float startpoint=new Point2D.Float(startx,starty);
     	int index=checkIfReturnAnyIntersection(pointlist,startpoint,direction);
-        //System.out.println("index is: "+index);
+        //test what shape we are in 
         switch(shape){
         	//will be the point
         	case 6:
@@ -591,7 +568,7 @@ public final class View
         	break;
 
         }
-	    
+	    //test which container we are in 
 		switch(container)
 		{
 			case 1:
@@ -762,85 +739,10 @@ public final class View
 
 
 		}
+		//handle the mouse click crate shape condition.
 	    for (int i=0;i<centerlist.size();i++)
 	    {
 	    	
-	    	
-	     // if(container==1)
-	    	// {
-	    	// 	  if(currentp.x+r>=xright)
-		    //     {
-		    //     	//System.out.println("right boundary");
-		    //     	//need to normalize this:
-		    //     	//Vector in=new Vector(vx,vy);
-		    //     	Vector per=new Vector(-1.0f,0.0f);
-		    //     	Vector out=getReflectionDirection(dir,per);
-		    //     	//change counter=0 and update the direction:
-		    //     	//Vector out=getReflectionDirection(in,per);
-			   //  	directionlist.set(i,new Vector(out.dX,out.dY));
-			   //  	counterlist.set(i,1);
-			   //  	centerlist.set(i,new Point2D.Float(currentp.x,currentp.y));
-		    //     	//resetrandom(dir,per,i,currentp.x,currentp.y);
-		    //     }
-		    //     else if(currentp.x-r<=xleft)
-		    //     {
-		    //     	//System.out.println("left boundary");
-		    //     	//Vector in=new Vector(vx,vy);
-		    //     	Vector per=new Vector(1.0f,0.0f);
-		    //     	Vector out=getReflectionDirection(dir,per);
-
-		    //     	directionlist.set(i,new Vector(out.dX,out.dY));
-			   //  	counterlist.set(i,1);
-			   //  	centerlist.set(i,new Point2D.Float(currentp.x,currentp.y));
-		    //     	//resetrandom(dir,per,i,currentp.x,currentp.y);
-		    //     	// vx=out.dX;
-		    //     	// vy=out.dY;
-		    //     	// counter=0;
-		    //     	// vx=out.dX;
-		    //     	// vy=out.dY;
-		    //     	// counter=0;
-		    //     	// startx=currentx;
-		    //     	// starty=currenty;
-		    //     	// speed=speed*impulseDown;
-		    //     	// bouncecount++;
-		    //     	// colormagnitude=colormagnitude-diff;
-		    //     	// currentcolor=colorvector.get(3);
-		    //     }
-		    //     else if(currentp.y+r>=ytop)
-		    //     {
-		    //     	//System.out.println("top boundary");
-		    //     	//Vector in=new Vector(vx,vy);
-		    //     	Vector per=new Vector(0.0f,-1.0f);
-		    //     	Vector out=getReflectionDirection(dir,per);
-		    //     	// vx=out.dX;
-		    //     	// vy=out.dY;
-		    //     	// counter=0;
-		    //     	// vx=out.dX;
-		    //     	// vy=out.dY;
-		    //     	// counter=0;
-		    //     	// startx=currentx;
-		    //     	// starty=currenty;
-		    //     	// speed=speed*impulseUp;
-		    //     	// bouncecount++;
-		    //     	// colormagnitude=colormagnitude-diff;
-		    //     	// currentcolor=colorvector.get(2);
-		    //     	//resetrandom(dir,per,i,currentp.x,currentp.y);
-		    //     	directionlist.set(i,new Vector(out.dX,out.dY));
-			   //  	counterlist.set(i,1);
-			   //  	centerlist.set(i,new Point2D.Float(currentp.x,currentp.y));
-		    //     }
-		    //     else if(currentp.y-r<=ybottom)
-		    //     {
-		    //     	//System.out.println("bottom boundayr");
-		    //     	//Vector in=new Vector(vx,vy);
-		    //     	Vector per=new Vector(0.0f,1.0f);
-		    //     	Vector out=getReflectionDirection(dir,per);
-		    //     	// vx=out.dX
-		    //     	directionlist.set(i,new Vector(out.dX,out.dY));
-			   //  	counterlist.set(i,1);
-			   //  	centerlist.set(i,new Point2D.Float(currentp.x,currentp.y));
-		    //     }
-	    	// }
 	    	 if(container==2||container==3||container==4)
 	    	{
 		    	Point2D.Float currentp=centerlist.get(i);
@@ -871,7 +773,7 @@ public final class View
         
     }
 
-   
+    //this is for reset eveyrthing when it hit the wall
     private void resetAll(Vector in, Vector per)
     {
     	Vector out=getReflectionDirection(in,per);
@@ -881,6 +783,8 @@ public final class View
     	startx=currentx;
     	starty=currenty;
     }
+
+    //when it hit the wall the random create shapes need to reset its state
     private void resetrandom(Vector in, Vector per, int index,float currentx,float currenty)
     {   
     	Vector out=getReflectionDirection(in,per);
@@ -896,6 +800,8 @@ public final class View
     	return (float)Math.abs(a.dX*b.dY-a.dY*b.dX);
     }
     
+    //get the distance of the point to a vector the later we can use this less than a threshhodl 
+    //to know if the shape hit the wall of the container or not.
     public float getDistanceOfPointToLineSegment(Point2D.Float a, Point2D.Float b, Point2D.Float c)
     {
     	//a,b is the point of the line segment and c is the moving poirnt
@@ -927,17 +833,19 @@ public final class View
         return bestindex;
 
     }
+
+    //when click on one it will draw the rectangular and also this is the default case.
 	private void drawRec(GL2 gl)
 	{
 		//reset the boundcount when a new container is draw
 		bouncecount=0;
+        //using GL_lINES, instead of line_loop in order to give each line a color easily.
 
 		gl.glBegin(GL.GL_LINES);
-		//gl.glLineWidth(10);
+         //the following two lines are needed in order to set the color of the line
         gl.glEnable(GL.GL_BLEND);
 		gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
-	    //gl.glColor3f(currentcolor.x,currentcolor.y,0.8f);
-	
+
 		
         pointlist=new ArrayList<Point2D.Float>();
      
@@ -969,6 +877,8 @@ public final class View
 		gl.glEnd();
 
 	}
+
+	//when click on 2 , draw regular polygon
 	private void drawSixHex(GL2 gl)
 	{
 		bouncecount=0;
@@ -1018,7 +928,8 @@ public final class View
 		}
 	
 	}
-
+    
+    //draw a circle with 32 sides.
 	private void drawThirtyTwoCirle(GL2 gl)
 	{
 		// gl.glEnable(GL.GL_BLEND);
@@ -1067,7 +978,7 @@ public final class View
 		}
 
 	}
-
+    //draw the irregular container.
 	private void drawIrregularContainer(GL2 gl)
 	{
 		bouncecount=0;
