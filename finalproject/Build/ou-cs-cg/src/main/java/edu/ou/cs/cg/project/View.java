@@ -130,10 +130,13 @@ public class View extends GLCanvas implements GLEventListener, KeyListener, Mous
 		gl.glViewport(0, 0, width, height);
 		gl.glMatrixMode(GL_PROJECTION);
 		gl.glLoadIdentity();
-		glu.gluPerspective(45.0, aspect, 0.1, 100.0);
+		//glu.gluPerspective(45.0, aspect, 0.1, 100.0);
+
+		glu.gluPerspective(90.0, aspect, 0.1, 100.0);
 			 
 		gl.glMatrixMode(GL_MODELVIEW);
 		gl.glLoadIdentity();
+		System.out.println("this reshape will be called only once!");
 	}
 
 	@Override
@@ -141,9 +144,20 @@ public class View extends GLCanvas implements GLEventListener, KeyListener, Mous
 		count=(count+1)%450;//%30;
 		//System.out.println("count is: "+count);
 		//when count goes to 180, the cube should get split!!
-		drawRubiksCube(drawable.getGL().getGL2());
+		GL2 gl=drawable.getGL().getGL2();
 
-		//drawPlane(drawable.getGL().getGL2());
+	 //    gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		// gl.glLoadIdentity();
+		
+		// // camera transformations
+		// gl.glTranslatef(ZERO_F, ZERO_F, zoom);
+		// gl.glRotatef(cameraAngleX, ONE_F, ZERO_F, ZERO_F);
+		// gl.glRotatef(cameraAngleY, ZERO_F, ONE_F, ZERO_F);
+		// gl.glRotatef(cameraAngleZ, ZERO_F, ZERO_F, ONE_F);
+
+
+		drawRubiksCube(gl);
+
 		if(cuttingoptions==0 && !stop)
 		{
 			//reset the count
@@ -152,13 +166,27 @@ public class View extends GLCanvas implements GLEventListener, KeyListener, Mous
 			  reset=true;
 			  count=0;	
 			}
+
+			// gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			// gl.glLoadIdentity();
+			
+			// // camera transformations
+			// gl.glTranslatef(ZERO_F, ZERO_F, zoom);
+			// gl.glRotatef(cameraAngleX, ONE_F, ZERO_F, ZERO_F);
+			// gl.glRotatef(cameraAngleY, ZERO_F, ONE_F, ZERO_F);
+			// gl.glRotatef(cameraAngleZ, ZERO_F, ZERO_F, ONE_F);
 			
 			drawPlane(drawable.getGL().getGL2(),count);
-			drawZigZagPlane(drawable.getGL().getGL2(),count,1,0);
-			drawZigZagPlane(drawable.getGL().getGL2(),count,-1,2);
-
-
+			drawPlaneCustomized(drawable.getGL().getGL2(),count,1,0);
+			drawPlaneCustomized(drawable.getGL().getGL2(),count,-1,2);
 		}
+
+		
+
+		 drawZigZagPlane(gl,0.0f,0.0f,0,0.0f);
+		 drawZigZagPlane(gl,45.0f,-2.0f,1,0.0f);
+		 drawZigZagPlane(gl,-45.0f,2.0f,2,0.0f);
+
 			}
 	
 	public void drawPlane(GL2 gl,int speed)
@@ -177,8 +205,8 @@ public class View extends GLCanvas implements GLEventListener, KeyListener, Mous
 		gl.glEnd();
       
 	}
-	//tilt is to change the sign and make the plane go left or right
-	public void drawZigZagPlane(GL2 gl, int speed, int tilt,int color)
+
+	public void drawPlaneCustomized(GL2 gl, int speed, int tilt,int color)
 	{
 		if(color==0)
 		{
@@ -204,6 +232,42 @@ public class View extends GLCanvas implements GLEventListener, KeyListener, Mous
 		gl.glEnd();
 
 	}
+	//tilt is to change the sign and make the plane go left or right
+	//, int speed, int tilt,int color
+	public void drawZigZagPlane(GL2 gl,Float rotate,Float trans, int color,Float zindex)
+	{
+
+
+        switch(color)
+        {
+        	case 0:
+        		gl.glColor3f(1.0f,0.0f,0.0f);
+        		break;
+        	case 1:
+        		gl.glColor3f(0.0f,1.0f,0.0f);
+        		break;
+    		case 2:
+    			gl.glColor3f(0.0f,0.0f,1.0f);
+    			break;
+
+        }
+		
+		//gl.glMatrixMode(GL_MODELVIEW);
+		//gl.glPushMatrix();
+		//gl.glLoadIdentity();
+	    gl.glRotatef(rotate,0.0f,1.0f,0.0f);
+	   // gl.glTranslatef(trans,0.0f,0.0f);
+	    //the begin need to be after the matrix transformation
+	    gl.glBegin(GL_QUADS);
+		gl.glVertex3f(-10.0f,-3.0f,zindex);
+		gl.glVertex3f(-4.0f,-3.0f,zindex);
+		gl.glVertex3f(-4.0f,3.0f,zindex);
+		gl.glVertex3f(-10.0f,3.0f,zindex);
+		//gl.glPopMatrix();
+		//gl.glLoadIdentity();
+		gl.glEnd();
+
+	}
 
 	
 	//**********************************************************************
@@ -213,20 +277,20 @@ public class View extends GLCanvas implements GLEventListener, KeyListener, Mous
 	private void drawRubiksCube(GL2 gl) {
 		//count=count+1;
 		//System.out.println("I am getting drawed!"+count);
-		gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	/*	gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		gl.glLoadIdentity();
 		
 		// camera transformations
 		gl.glTranslatef(ZERO_F, ZERO_F, zoom);
 		gl.glRotatef(cameraAngleX, ONE_F, ZERO_F, ZERO_F);
 		gl.glRotatef(cameraAngleY, ZERO_F, ONE_F, ZERO_F);
-		gl.glRotatef(cameraAngleZ, ZERO_F, ZERO_F, ONE_F);
+		gl.glRotatef(cameraAngleZ, ZERO_F, ZERO_F, ONE_F);*/
 		
 		int lastIdx = rubiksCube.getSize()-1;
 		for (int x=0; x<rubiksCube.getSize(); x++) {
 			for (int y=0; y<rubiksCube.getSize(); y++) {
 				for (int z=0; z<rubiksCube.getSize(); z++) {
-					gl.glPushMatrix();
+					//gl.glPushMatrix();
 					//THe code following are useless for now.
 					//gl.glRotatef(columnAnglesX[x], ONE_F, ZERO_F, ZERO_F);
 					//gl.glRotatef(rowAnglesY[y], ZERO_F, ONE_F, ZERO_F);
@@ -234,7 +298,7 @@ public class View extends GLCanvas implements GLEventListener, KeyListener, Mous
 					
 					// bottom-left-front corner of cube is (0,0,0) so we need to center it at the origin
 					float t = (float) lastIdx/2;
-					gl.glTranslatef((x-t)*CUBIE_TRANSLATION_FACTOR, (y-t)*CUBIE_TRANSLATION_FACTOR, -(z-t)*CUBIE_TRANSLATION_FACTOR);
+					//gl.glTranslatef((x-t)*CUBIE_TRANSLATION_FACTOR, (y-t)*CUBIE_TRANSLATION_FACTOR, -(z-t)*CUBIE_TRANSLATION_FACTOR);
 					
 					drawCubie(gl, rubiksCube.getVisibleFaces(x, y, z), rubiksCube.getCubie(x, y, z));
 				/*	if(x==1 && y==1&&z==1)
@@ -244,7 +308,7 @@ public class View extends GLCanvas implements GLEventListener, KeyListener, Mous
 	
 						}*/
 
-				    gl.glPopMatrix();
+				   // gl.glPopMatrix();
 				}
 			}
 		}
