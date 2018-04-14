@@ -66,6 +66,18 @@ public final class View
 	private Point2D.Double				cursor;		// Current cursor coordinates
 	private ArrayList<Point2D.Double>	points;		// User's polyline points
 
+	private int nameindex=0;
+	private int activename;
+
+	public Network network;
+	public String[] namelist;
+	public Color[] colorlist;
+	public int[] sidelist;
+	public ArrayList<Node> nodelist=new ArrayList<Node>();
+	//the default hightlighted will be the last addeed node in this way
+	public int highlightedIndex=0;
+
+
 	//**********************************************************************
 	// Constructors and Finalizer
 	//**********************************************************************
@@ -92,7 +104,110 @@ public final class View
 	//**********************************************************************
 	// Getters and Setters
 	//**********************************************************************
+	public void drawEdge(Node node,GL2 gl,boolean highlight)
+	{
+		int side=node.side;
+        double centerx=node.centerx;
+        double centery=node.centery;
+        double width=node.width;
+        float[] rgb=node.rgb;
+        gl.glColor3f(rgb[0],rgb[1],rgb[2]);
+        gl.glEnable(GL.GL_BLEND);
+		gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
+    	
+        if(highlight)
+        {
+        	gl.glColor3f(1.0f, 1.0f, 1.0f);
+	    	
+        }
+        else
+        {
+        	//this is the dark grey.
+        	float c=105.0f/255.0f;
+        	gl.glColor3f(c,c,c);
+        }
+        gl.glLineWidth(4.0f);
+		gl.glBegin(GL.GL_LINE_LOOP);
+        for(int i=0;i<side;i++)
+    	{
+    		double theta=((2.0 * Math.PI)/side)*i;
+    		gl.glVertex2d(centerx+width*Math.cos(theta),centery+width*Math.sin(theta));
+    	}
+		gl.glEnd();
+        
 
+	}
+    public void drawNode(Node node,GL2 gl,boolean highlight)
+    {
+    	    if(highlight)
+    	    {
+    	    drawEdge(node,gl,true);
+
+    	    }
+    		else
+    		{
+    			//edge the other stuff in dark gray.
+    			//dark grey is (105,105,105)
+    			drawEdge(node,gl,false);
+
+    		}
+    			int side=node.side;
+		        double centerx=node.centerx;
+		        double centery=node.centery;
+		        double width=node.width;
+		        float[] rgb=node.rgb;
+		        gl.glColor3f(rgb[0],rgb[1],rgb[2]);
+		    	gl.glBegin(GL2.GL_POLYGON); 
+		    	for(int i=0;i<side;i++)
+		    	{
+		    		double theta=((2.0 * Math.PI)/side)*i;
+		    		gl.glVertex2d(centerx+width*Math.cos(theta),centery+width*Math.sin(theta));
+		    	}
+				gl.glEnd();
+    	
+        
+    }
+
+    public void addNode()
+    {
+    	if(activename<=0)
+    	{
+    		return;
+    	}
+    	 String name=namelist[nameindex];
+    	 int side=network.getSides(name);
+    	 Color color=network.getColor(name);
+    	 float[] rgb=getRgbColor(color);
+    	 double width=0.1;
+    	 double height=0.1;
+    	 double centerx=getRandom(0.2);
+         double centery=getRandom(0.2);
+
+         Node newNode=new Node(centerx,centery,width,height,rgb,side);
+         //when a node get added to the netwrok, we replace its with the last node in the nodelist and decreas
+         //the number of active node
+         //this is to rememeber how many active name are in the list
+         //and the index agter that we still store the name, but we mark it as not avaailble in this way
+         //this.nameindex=(this.nameindex+1)%activename;
+         //the order of the node appear is going to chnage but it is not loop it again it is O(1), instead of 
+         //O(n)
+         
+         nodelist.add(newNode);
+         updateAll();
+         //update the highlightedindex, the highlighted one should be the last one being added.
+         highlightedIndex=nodelist.size()-1;
+    }
+    public double getRandom(double max)
+    {
+    	double min=0.0d;
+    	double random =(min + Math.random() * (max - min));
+    	return random;
+
+    }
+    public void highlight()
+    {
+
+    }
 	public int	getWidth()
 	{
 		return w;
@@ -102,7 +217,22 @@ public final class View
 	{
 		return h;
 	}
-
+    public void indexUp()
+    {
+       this.nameindex=(this.nameindex+1)%activename;
+    }
+    public void indexDown()
+    {
+       //this.nameindex=(((this.nameindex)+10)-1)%10;
+    	if(this.nameindex>=1)
+    	{
+    		this.nameindex=this.nameindex-1;
+    	}
+    	else
+    	{
+    		this.nameindex=activename-1;
+    	}
+    }
 	public Point2D.Double	getOrigin()
 	{
 		return new Point2D.Double(origin.x, origin.y);
@@ -158,6 +288,46 @@ public final class View
 
 		renderer = new TextRenderer(new Font("Monospaced", Font.PLAIN, 12),
 									true, true);
+		network=new Network();
+
+        namelist=network.getAllNames();
+        colorlist=network.getAllColors();
+        sidelist=network.getAllSides();
+        activename=namelist.length;
+
+	}
+    
+    //this will update the order of 3 things correspondingly in the list
+    public void updateAll()
+    {
+    	 String nametemp=namelist[nameindex];
+         namelist[nameindex]=namelist[activename-1];
+         namelist[activename-1]=nametemp;
+
+         int sidetemp=sidelist[nameindex];
+         sidelist[nameindex]=sidelist[activename-1];
+         sidelist[activename-1]=sidetemp;
+
+         Color colortemp=colorlist[nameindex];
+         colorlist[nameindex]=colorlist[activename-1];
+         colorlist[activename-1]=colortemp;
+         
+         //this is to rememeber how many active name are in the list
+         //and the index agter that we still store the name, but we mark it as not avaailble in this way
+         //this.nameindex=(this.nameindex+1)%activename;
+         //the order of the node appear is going to chnage but it is not loop it again it is O(1), instead of 
+         //O(n)
+         activename=activename-1;
+
+    }
+
+	public float[] getRgbColor(Color color)
+	{
+	    float[] rgbcolor=new float[3];
+	    rgbcolor[0]=(float)(color.getRed()/255.0f);
+	    rgbcolor[1]=(float)(color.getGreen()/255.0f);
+	    rgbcolor[2]=(float)(color.getBlue()/255.0f);
+	    return rgbcolor;
 	}
 
 	public void		dispose(GLAutoDrawable drawable)
@@ -171,6 +341,7 @@ public final class View
 
 		update(drawable);
 		render(drawable);
+        
 	}
 
 	public void		reshape(GLAutoDrawable drawable, int x, int y, int w, int h)
@@ -217,6 +388,35 @@ public final class View
 		drawCursor(gl);							// Crosshairs at mouse location
 		drawCursorCoordinates(drawable);		// Draw some text
 		drawPolyline(gl);						// Draw the user's sketch
+		String textToRender="no-name-to-display";
+		//activaename is range from 1 to the length of the original total names.
+        if(activename>0)
+        {
+        	textToRender=namelist[nameindex];
+        }
+  
+		TextRenderer textRenderer = new TextRenderer(new Font("Verdana", Font.BOLD, 12));
+		textRenderer.beginRendering(drawable.getWidth(), drawable.getHeight());
+		textRenderer.setColor(Color.YELLOW);
+		textRenderer.setSmoothing(true);
+		textRenderer.draw(textToRender, 50,50);
+		textRenderer.endRendering();
+
+		//draw node
+		int count=0;
+		for(Node node: nodelist)
+		{
+			if(count==highlightedIndex)
+			{
+				drawNode(node,gl,true);
+			}
+			else
+			{
+				drawNode(node,gl,false);
+			}
+			count=count+1;
+			
+		}
 	}
 
 	//**********************************************************************

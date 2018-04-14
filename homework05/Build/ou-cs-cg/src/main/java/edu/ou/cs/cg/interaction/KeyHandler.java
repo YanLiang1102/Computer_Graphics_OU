@@ -65,11 +65,16 @@ public final class KeyHandler extends KeyAdapter
 
 			case KeyEvent.VK_NUMPAD4:
 			case KeyEvent.VK_LEFT:
-				p.x -= a;	p.y += 0.0;	break;
+					view.indexDown();
+					break;
 
 			case KeyEvent.VK_NUMPAD6:
 			case KeyEvent.VK_RIGHT:
-				p.x += a;	p.y += 0.0;	break;
+   					view.indexUp();
+					break;
+			case KeyEvent.VK_ENTER:
+			        view.addNode();
+					break;
 
 			case KeyEvent.VK_NUMPAD2:
 			case KeyEvent.VK_DOWN:
