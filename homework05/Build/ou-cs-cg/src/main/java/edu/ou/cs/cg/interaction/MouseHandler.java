@@ -57,12 +57,24 @@ public final class MouseHandler extends MouseAdapter
 
 	public void		mouseClicked(MouseEvent e)
 	{
-		Point2D.Double	v = calcCoordinatesInView(e.getX(), e.getY());
+		 
 
-		if (Utilities.isShiftDown(e))
-			view.setOrigin(v);
-		else
-			view.add(v);
+		// if (Utilities.isShiftDown(e))
+		// 	view.setOrigin(v);
+		// else
+		// 	view.add(v);
+		//System.out.println("hey I pressed the mouse.");
+		//this is the cursor
+		Point2D.Double	v = calcCoordinatesInView(e.getX(), e.getY());
+		//System.out.println("cursor x: "+e.getX());
+		//System.out.println("cursor y: "+e.getY());
+ 		int index=view.findFrontMostSelected(v);
+        //System.out.println("frontmost index for this is: "+index);
+		view.highlightNode(index);
+		//inoder for the view to be repaint
+		//why do we need this repaint is the fps going to fix this???
+		view.setCursor(v);
+
 	}
 
 	public void		mouseEntered(MouseEvent e)
@@ -91,10 +103,10 @@ public final class MouseHandler extends MouseAdapter
 
 	public void		mouseDragged(MouseEvent e)
 	{
-		Point2D.Double	v = calcCoordinatesInView(e.getX(), e.getY());
+		// Point2D.Double	v = calcCoordinatesInView(e.getX(), e.getY());
 
-		view.add(v);
-		view.setCursor(v);
+		// view.add(v);
+		// view.setCursor(v);
 	}
 
 	public void		mouseMoved(MouseEvent e)
@@ -110,6 +122,7 @@ public final class MouseHandler extends MouseAdapter
 
 	public void		mouseWheelMoved(MouseWheelEvent e)
 	{
+		//System.out.println("he")
 	}
 
 	//**********************************************************************

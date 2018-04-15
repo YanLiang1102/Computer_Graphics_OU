@@ -75,7 +75,16 @@ public final class KeyHandler extends KeyAdapter
 			case KeyEvent.VK_ENTER:
 			        view.addNode();
 					break;
-
+			case KeyEvent.VK_DELETE:
+					view.removeNode();
+					System.out.println("delete pressed!");
+					break;
+			case KeyEvent.VK_PERIOD:
+				 view.HighlightDown();
+				 break;
+			case KeyEvent.VK_COMMA:
+			     view.HighlightUp();
+			     break;
 			case KeyEvent.VK_NUMPAD2:
 			case KeyEvent.VK_DOWN:
 				p.x += 0.0;	p.y -= a;	break;
@@ -96,9 +105,9 @@ public final class KeyHandler extends KeyAdapter
 			case KeyEvent.VK_NUMPAD9:
 				p.x += a;	p.y += a;	break;
 
-			case KeyEvent.VK_DELETE:
-				view.clear();
-				return;
+			// case KeyEvent.VK_DELETE:
+			// 	view.clear();
+			// 	return;
 		}
 
 		view.setOrigin(p);

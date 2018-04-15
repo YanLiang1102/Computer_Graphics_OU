@@ -168,6 +168,85 @@ public final class View
         
     }
 
+    public void HighlightUp()
+    {
+    	int size=nodelist.size();
+    	highlightedIndex=(highlightedIndex+1)%size;
+    }
+    public void HighlightDown()
+    {
+    	int size=nodelist.size();
+    	if(highlightedIndex<=0)
+    		highlightedIndex=size-1;
+    	else
+    		highlightedIndex=highlightedIndex-1;
+    }
+    //pass in the index of the node in the nodelist that you want to highlight
+    public void highlightNode(int index)
+    {
+    	highlightedIndex=index;
+    }
+    //this will return the index of the node that reside in the original list
+    public int getIndexForTheNode(String name)
+    {
+    	int wholesize=namelist.length;
+    	//the index after the activename will be the name that in the nodelist
+        for(int i=activename;i<wholesize;i++)
+        {
+           if(namelist[i]==name)
+           {
+           	return i;
+           }
+        }
+        //this will be the case that fail.
+        return -1;
+    }
+   
+
+    public void removeNode()
+    {
+    	//do nothing if there is no node on the view.
+    	if(nodelist.size()==0)
+    	{
+    		return;
+    	}
+    	System.out.println("before activename is: "+activename);
+    	String name=nodelist.get(highlightedIndex).name;
+    	int index=getIndexForTheNode(name);
+    	//System.out.println("index from the name is: "+index);
+    	//we need to replace the index with the namelist[activename] so it become available in that way
+    	if(index<activename)
+    	{
+    		System.out.println("index is: "+index);
+    		System.out.println("activename is: "+activename);
+    		System.out.println("error!!");
+    	}
+    	else if(index==activename)
+    	{
+    		//then do nothing
+    	}
+    	else
+    	{
+    		//replace the node
+    		String temp=namelist[activename];
+    		namelist[activename]=namelist[index];
+    		namelist[index]=temp;
+    	}
+    	//then need up add 1 to the activename to let the system know one more node is added in
+    	activename=activename+1;
+    	//then remove the hightlighted node from the nodelist.
+    	//move the hightlightedOne to be the next:
+    	nodelist.remove(highlightedIndex);
+    	
+    	if(nodelist.size()!=0)
+    	{
+    		//this is the way to figure out which one to highlight for the next one.
+    		highlightedIndex=(highlightedIndex)%(nodelist.size());
+
+    	}
+    	System.out.println("active after remove node: "+activename);
+    }
+
     public void addNode()
     {
     	if(activename<=0)
@@ -183,7 +262,7 @@ public final class View
     	 double centerx=getRandom(0.2);
          double centery=getRandom(0.2);
 
-         Node newNode=new Node(centerx,centery,width,height,rgb,side);
+         Node newNode=new Node(centerx,centery,width,height,rgb,side,name);
          //when a node get added to the netwrok, we replace its with the last node in the nodelist and decreas
          //the number of active node
          //this is to rememeber how many active name are in the list
@@ -204,10 +283,85 @@ public final class View
     	return random;
 
     }
-    public void highlight()
+    //give the position of a cursor return which is the front most node this cursor is on
+    public int findFrontMostSelected(Point2D.Double cursor)
     {
+    	//looping through the end of the nodelist and find which is the first one that contain this point
+    	int size=nodelist.size();
+    	for(int i=size-1;i>=0;i--)
+    	{
+    		if(checkPointInsidePolygon(cursor,i))
+    		{
+    			//return the index of the node inside of the nodelist
+    			return i;
+    		}
 
+    	}
+    	//this means this point is not in any of the polygon
+    	return -1;
+   
     }
+
+    //use the algorithm that draw a ray to see if it has even or odd intersection with the polygons,
+    //if it is odd then it is inside, if it is even it is outside.
+    public boolean checkPointInsidePolygon(Point2D.Double p,int nodeindex)
+    {
+    	//since all our polygon is regular, this is such a clever algorithm to solve it:
+    	//https://everything2.com/title/Determining+if+a+point+is+inside+a+regular+polygon
+
+    	//first of all use the nodeindex to find the information of this node.
+    	Node node=nodelist.get(nodeindex);
+    	double cx=node.centerx;
+    	double cy=node.centery;
+    	Point2D.Double c=new Point2D.Double(cx,cy);
+    	int side=node.side;
+    	double width=node.width;
+    	//calcute the distance between the center and the current point, just keep the square to make it
+    	//efficient
+    	double cursorToCenter=squareDistance(p,c);
+      
+    	//then for each edge in the polygon reflect the center point against it
+    	//and then check the distance of the center to this reflection point
+    	for(int i=0;i<side;i++)
+    	{
+    		double theta=((2.0 * Math.PI)/side)*i;
+    		int nexti=(i+1)%side;
+    		double theta1=((2.0 * Math.PI)/side)*nexti;
+    		//gl.glVertex2d(centerx+width*Math.cos(theta),centery+width*Math.sin(theta));
+            Point2D.Double p1=new Point2D.Double(cx+width*Math.cos(theta),cy+width*Math.sin(theta));
+            Point2D.Double p2=new Point2D.Double(cx+width*Math.cos(theta1),cy+width*Math.sin(theta1));
+
+            Point2D.Double reflect=getReflectionPoint(p1,p2,c);
+
+            double cursorToReflect=squareDistance(reflect,p);
+            //System.out.print("cursor to center: "+cursorToCenter);
+            //System.out.print("cursor to center: "+cursorToCenter);
+            if(cursorToCenter>cursorToReflect)
+            {
+            	//under this condition the cursor has to be outside fo the polygon
+            	return false;
+            }
+    	}
+    	//if not find any one like that , return true which means the cursor is inside polygon.
+        return true;
+    }
+
+    private double squareDistance(Point2D.Double p1, Point2D.Double p2)
+    {
+    	return (p1.x-p2.x)*(p1.x-p2.x)+(p1.y-p2.y)*(p1.y-p2.y);
+    }
+
+    private Point2D.Double getReflectionPoint(Point2D.Double p1, Point2D.Double p2, Point2D.Double c)
+    {
+    	double midx=p1.x+p2.x;
+    	double midy=p1.y+p2.y;
+
+    	double reflectx=midx-c.x;
+    	double reflecty=midy-c.y;
+
+    	return new Point2D.Double(reflectx,reflecty);
+    }
+    
 	public int	getWidth()
 	{
 		return w;
@@ -294,6 +448,7 @@ public final class View
         colorlist=network.getAllColors();
         sidelist=network.getAllSides();
         activename=namelist.length;
+        System.out.println("active length is: "+activename);
 
 	}
     
