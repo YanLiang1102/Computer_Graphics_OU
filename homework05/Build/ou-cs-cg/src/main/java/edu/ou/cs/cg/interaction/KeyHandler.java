@@ -36,6 +36,7 @@ public final class KeyHandler extends KeyAdapter
 	// State (internal) variables
 	private final View	view;
 
+
 	//**********************************************************************
 	// Constructors and Finalizer
 	//**********************************************************************
@@ -57,58 +58,101 @@ public final class KeyHandler extends KeyAdapter
 	{
 		Point2D.Double	p = view.getOrigin();
 		double			a = (Utilities.isShiftDown(e) ? 0.01 : 0.1);
-
-		switch (e.getKeyCode())
+		//shift key is down
+		if(a==0.01)
 		{
-			case KeyEvent.VK_NUMPAD5:
-				p.x = 0.0;	p.y = 0.0;	break;
+			if(e.getKeyCode()==KeyEvent.VK_LEFT)
+        	{
+                //scale the node with width
+                view.scaleNode("width");
 
-			case KeyEvent.VK_NUMPAD4:
-			case KeyEvent.VK_LEFT:
-					view.indexDown();
-					break;
+        	}
+        	else if(e.getKeyCode()==KeyEvent.VK_RIGHT)
+        	{
+                view.scaleNode("width");
+        	}
+        	else if(e.getKeyCode()==KeyEvent.VK_UP)
+        	{
+               view.scaleNode("height");
+        	}
+        	else if(e.getKeyCode()==KeyEvent.VK_DOWN)
+        	{
+       		  view.scaleNode("height");
+        	}
 
-			case KeyEvent.VK_NUMPAD6:
-			case KeyEvent.VK_RIGHT:
-   					view.indexUp();
-					break;
-			case KeyEvent.VK_ENTER:
-			        view.addNode();
-					break;
-			case KeyEvent.VK_DELETE:
-					view.removeNode();
-					System.out.println("delete pressed!");
-					break;
-			case KeyEvent.VK_PERIOD:
-				 view.HighlightDown();
-				 break;
-			case KeyEvent.VK_COMMA:
-			     view.HighlightUp();
-			     break;
-			case KeyEvent.VK_NUMPAD2:
-			case KeyEvent.VK_DOWN:
-				p.x += 0.0;	p.y -= a;	break;
 
-			case KeyEvent.VK_NUMPAD8:
-			case KeyEvent.VK_UP:
-				p.x += 0.0;	p.y += a;	break;
-
-			case KeyEvent.VK_NUMPAD1:
-				p.x -= a;	p.y -= a;	break;
-
-			case KeyEvent.VK_NUMPAD7:
-				p.x -= a;	p.y += a;	break;
-
-			case KeyEvent.VK_NUMPAD3:
-				p.x += a;	p.y -= a;	break;
-
-			case KeyEvent.VK_NUMPAD9:
-				p.x += a;	p.y += a;	break;
-
-			// case KeyEvent.VK_DELETE:
-			// 	view.clear();
-			// 	return;
 		}
+		else
+		{
+						switch (e.getKeyCode())
+				{
+					case KeyEvent.VK_NUMPAD5:
+						p.x = 0.0;	p.y = 0.0;	break;
+
+					case KeyEvent.VK_NUMPAD4:
+					//thsi is to loop through the name using K and L, need to high light this in the report
+					case KeyEvent.VK_K:
+							view.indexDown();
+							break;
+
+					case KeyEvent.VK_NUMPAD6:
+					case KeyEvent.VK_L:
+		   					view.indexUp();
+							break;
+					case KeyEvent.VK_ENTER:
+					        view.addNode();
+							break;
+					case KeyEvent.VK_DELETE:
+							view.removeNode();
+							System.out.println("delete pressed!");
+							break;
+					case KeyEvent.VK_PERIOD:
+						 view.HighlightDown();
+						 break;
+					case KeyEvent.VK_COMMA:
+					     view.HighlightUp();
+					     break;
+					case KeyEvent.VK_NUMPAD2:
+					
+
+					case KeyEvent.VK_NUMPAD8:
+
+					case KeyEvent.VK_NUMPAD1:
+						p.x -= a;	p.y -= a;	break;
+
+					case KeyEvent.VK_NUMPAD7:
+						p.x -= a;	p.y += a;	break;
+
+					case KeyEvent.VK_NUMPAD3:
+						p.x += a;	p.y -= a;	break;
+
+					case KeyEvent.VK_NUMPAD9:
+						p.x += a;	p.y += a;	break;
+					case KeyEvent.VK_F24:
+						System.out.println("hey the shift key get pressed!");
+						break;
+					//with the shift key up we need to translate
+					case KeyEvent.VK_RIGHT:
+						view.translateNode("right");
+					    break;
+					case KeyEvent.VK_UP:
+					    view.translateNode("up");
+					    break;
+					case KeyEvent.VK_DOWN:
+					    view.translateNode("dowm");
+					    break;
+					case KeyEvent.VK_LEFT:
+					    view.translateNode("left");
+					    break;
+					
+
+					// case KeyEvent.VK_DELETE:
+					// 	view.clear();
+					// 	return;
+				}
+
+		}
+		
 
 		view.setOrigin(p);
 	}

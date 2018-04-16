@@ -35,6 +35,11 @@ public final class MouseHandler extends MouseAdapter
 
 	// State (internal) variables
 	private final View	view;
+	//store the position when the mouse is clicked
+	private Double cx=0.0;
+	private Double cy=0.0;
+	private Double origx=0.0;
+	private Double origy=0.0;
 
 	//**********************************************************************
 	// Constructors and Finalizer
@@ -74,14 +79,20 @@ public final class MouseHandler extends MouseAdapter
 		//inoder for the view to be repaint
 		//why do we need this repaint is the fps going to fix this???
 		view.setCursor(v);
+		//cx is the current position of the cursor before somebody drag it.
+		cx=v.x;
+		cy=v.y;
+		Point2D.Double origin=view.getOrigin();
+		origx=origin.x;
+		origy=origin.y;
 
 	}
 
 	public void		mouseEntered(MouseEvent e)
 	{
-		Point2D.Double	v = calcCoordinatesInView(e.getX(), e.getY());
+		// Point2D.Double	v = calcCoordinatesInView(e.getX(), e.getY());
 
-		view.setCursor(v);
+		// view.setCursor(v);
 	}
 
 	public void		mouseExited(MouseEvent e)
@@ -95,6 +106,7 @@ public final class MouseHandler extends MouseAdapter
 
 	public void		mouseReleased(MouseEvent e)
 	{
+		//System.out.println("hey mouse released!");
 	}
 
 	//**********************************************************************
@@ -103,17 +115,39 @@ public final class MouseHandler extends MouseAdapter
 
 	public void		mouseDragged(MouseEvent e)
 	{
-		// Point2D.Double	v = calcCoordinatesInView(e.getX(), e.getY());
+		Point2D.Double	v = calcCoordinatesInView(e.getX(), e.getY());
+		//when shift is up
+		if(!Utilities.isShiftDown(e))
+		{
+			
+			 Point2D.Double diff=new Point2D.Double(v.x-cx,v.y-cy);
+			 view.setCenter(new Point2D.Double(origx+diff.x,origy+diff.y));
+			 
+		}
+		//when shift is down
+		else
+		{
+          //need to rotate;
+			Point2D.Double v1=new Point2D.Double(cx-origx,cy-origy);
+			Point2D.Double v2=new Point2D.Double(v.x-origx,v.y-origy);
+			Double angle=view.angleBetweenVectors(v1,v2);
+			//and this angle need to be reset when the highlighted node is changed.
+			//view.rotateAngle=angle;
+			Node node=view.getNode();
+			node.angle=angle;
 
-		// view.add(v);
-		// view.setCursor(v);
+		}
+		view.setCursor(v);
+		 
 	}
+
+	
 
 	public void		mouseMoved(MouseEvent e)
 	{
-		Point2D.Double	v = calcCoordinatesInView(e.getX(), e.getY());
+		// Point2D.Double	v = calcCoordinatesInView(e.getX(), e.getY());
 
-		view.setCursor(v);
+		// view.setCursor(v);
 	}
 
 	//**********************************************************************
@@ -140,5 +174,6 @@ public final class MouseHandler extends MouseAdapter
 		return new Point2D.Double(vx, vy);
 	}
 }
+
 
 //******************************************************************************

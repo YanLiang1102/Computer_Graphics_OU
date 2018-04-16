@@ -23,9 +23,9 @@ public final class Node
     float[] rgb=new float[3];
     public int side=0;
     public String name;
-   // int originalindex=0;
+    public Double angle;
 
-    public Node(double centerx, double centery,double width,double height, float[] rgb,int side,String name)
+    public Node(double centerx, double centery,double width,double height, float[] rgb,int side,String name,Double angle)
     {
     	this.centerx=centerx;
     	this.centery=centery;
@@ -36,6 +36,7 @@ public final class Node
     	this.rgb[2]=rgb[2];
     	this.side=side;
     	this.name=name;
+    	this.angle=angle;
     	//this.originalindex=originalindex;
 
     }

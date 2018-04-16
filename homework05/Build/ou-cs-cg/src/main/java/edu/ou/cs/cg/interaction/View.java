@@ -76,6 +76,7 @@ public final class View
 	public ArrayList<Node> nodelist=new ArrayList<Node>();
 	//the default hightlighted will be the last addeed node in this way
 	public int highlightedIndex=0;
+	//public double rotateAngle=0.0;
 
 
 	//**********************************************************************
@@ -131,14 +132,17 @@ public final class View
         for(int i=0;i<side;i++)
     	{
     		double theta=((2.0 * Math.PI)/side)*i;
-    		gl.glVertex2d(centerx+width*Math.cos(theta),centery+width*Math.sin(theta));
+    		gl.glVertex2d(centerx+width*Math.cos(theta-node.angle),centery+width*Math.sin(theta-node.angle));
     	}
 		gl.glEnd();
         
 
 	}
+
+	//gamma will be the rotation
     public void drawNode(Node node,GL2 gl,boolean highlight)
     {
+    	    Double gamma=node.angle;
     	    if(highlight)
     	    {
     	    drawEdge(node,gl,true);
@@ -161,7 +165,7 @@ public final class View
 		    	for(int i=0;i<side;i++)
 		    	{
 		    		double theta=((2.0 * Math.PI)/side)*i;
-		    		gl.glVertex2d(centerx+width*Math.cos(theta),centery+width*Math.sin(theta));
+		    		gl.glVertex2d(centerx+width*Math.cos(theta-gamma),centery+width*Math.sin(theta-gamma));
 		    	}
 				gl.glEnd();
     	
@@ -262,7 +266,7 @@ public final class View
     	 double centerx=getRandom(0.2);
          double centery=getRandom(0.2);
 
-         Node newNode=new Node(centerx,centery,width,height,rgb,side,name);
+         Node newNode=new Node(centerx,centery,width,height,rgb,side,name,0.0);
          //when a node get added to the netwrok, we replace its with the last node in the nodelist and decreas
          //the number of active node
          //this is to rememeber how many active name are in the list
@@ -361,6 +365,33 @@ public final class View
 
     	return new Point2D.Double(reflectx,reflecty);
     }
+
+    public void dragNode(Point2D.Double diff)
+    {
+    	try
+    	{
+    		System.out.println("highlighted index: "+highlightedIndex);
+    		Node node=nodelist.get(highlightedIndex);
+	    	node.centerx=node.centerx+diff.x;
+	    	node.centery=node.centery+diff.y;
+
+    	}
+    	catch(Exception e)
+    	{
+          System.out.println("hey I failed: "+e);
+    	}
+    	
+
+    }
+    public Node getNode()
+    {
+    	return nodelist.get(highlightedIndex);
+    }
+    public Point2D.Double getHighlight()
+	{
+		Node node=nodelist.get(highlightedIndex);
+    	return new Point2D.Double(node.centerx,node.centery);
+	}
     
 	public int	getWidth()
 	{
@@ -374,6 +405,76 @@ public final class View
     public void indexUp()
     {
        this.nameindex=(this.nameindex+1)%activename;
+    }
+
+    public void setCenter(Point2D.Double p)
+    {
+    	Node node=nodelist.get(highlightedIndex);
+    	node.centerx=p.x;
+    	node.centery=p.y;
+    }
+    public void scaleNode(String direction)
+    {
+    	//do nothing if there noting in the nodelist.
+    	if(nodelist.size()==0)
+    	{
+    		return;
+    	}
+    	//be cause height is not being called, it is regular why it has height and width what do u want from that
+    	if(direction=="height")
+    	{
+    		//System.out.println("is this scale height getting called")
+    		Node node=nodelist.get(highlightedIndex);
+    		Double width=node.width;
+    		node.width=node.width*1.1;
+    	}
+    	//will be "width"
+    	else
+    	{
+    		Node node=nodelist.get(highlightedIndex);
+    		Double width=node.width;
+    		node.width=node.width*1.1;
+    	}
+    }
+    //index will be index of the node in the nodelist and direction will 
+    //on whichever direction they want to translate
+    public void translateNode(String direction)
+    {
+    	//do nothing if there noting in the nodelist.
+    	if(nodelist.size()==0)
+    	{
+    		return;
+    	}
+    	if(direction=="left")
+    	{
+
+    	   //update the center of the selected node
+    		Node node=nodelist.get(highlightedIndex);
+    		Double width=node.width;
+    		node.centerx=node.centerx-width*0.1;
+    	}
+    	else if(direction=="right")
+    	{
+    		Node node=nodelist.get(highlightedIndex);
+    		Double width=node.width;
+    		node.centerx=node.centerx+width*0.1;
+
+    	}
+    	else if(direction=="up")
+    	{
+    		Node node=nodelist.get(highlightedIndex);
+    		Double height=node.height;
+    		node.centery=node.centery+height*0.1;
+
+
+    	}
+    	else if(direction=="down")
+    	{
+    		Node node=nodelist.get(highlightedIndex);
+    		Double height=node.height;
+    		node.centery=node.centery-height*0.1;
+
+    	}
     }
     public void indexDown()
     {
@@ -449,6 +550,11 @@ public final class View
         sidelist=network.getAllSides();
         activename=namelist.length;
         System.out.println("active length is: "+activename);
+
+        // Point2D.Double v1=new Point2D.Double(1.0,0.0);
+        // Point2D.Double v2=new Point2D.Double(0.0,1.0);
+        // Double result=angleBetweenVectors(v1,v2);
+        // System.out.println("angle shoudl be 0.76: "+result);
 
 	}
     
@@ -540,9 +646,9 @@ public final class View
 		gl.glClear(GL.GL_COLOR_BUFFER_BIT);		// Clear the buffer
 		drawBounds(gl);							// Unit bounding box
 		drawAxes(gl);							// X and Y axes
-		drawCursor(gl);							// Crosshairs at mouse location
+		//drawCursor(gl);							// Crosshairs at mouse location
 		drawCursorCoordinates(drawable);		// Draw some text
-		drawPolyline(gl);						// Draw the user's sketch
+		//drawPolyline(gl);						// Draw the user's sketch
 		String textToRender="no-name-to-display";
 		//activaename is range from 1 to the length of the original total names.
         if(activename>0)
@@ -591,6 +697,21 @@ public final class View
 		gl.glEnd();
 	}
 
+ //    //this will roatte the node with its own center with the passed in angle
+	// private void rotate(double angle,GL2 gl)
+	// {
+	// 	Node node=nodelist.get(highlightedIndex);
+	// 	Double cx=node.centerx;
+	// 	Double cy=node.centery;
+	// 	node.centerx=0.0;
+	// 	node.centery=0.0;
+	// 	//teh rotate around the center,
+	// 	drawNode(node,gl,true,angle);
+	// 	//then move it back
+	// 	node.centerx=cx;
+	// 	node.centery
+	// }
+
 	private void	drawAxes(GL2 gl)
 	{
 		gl.glBegin(GL.GL_LINES);
@@ -603,6 +724,20 @@ public final class View
 		gl.glVertex2d(0.0, 10.0);
 
 		gl.glEnd();
+	}
+    //I am using the point to represent the two components of the vector
+	public Double angleBetweenVectors(Point2D.Double v1, Point2D.Double v2)
+	{
+		double length1=Math.sqrt(v1.x*v1.x+v1.y*v1.y);
+		double length2=Math.sqrt(v2.x*v2.x+v2.y*v2.y);
+		double crosspro=crossProduct(v1,v2);
+		return Math.acos(crosspro/(length1*length2));
+
+	}
+
+	public Double crossProduct(Point2D.Double v1, Point2D.Double v2)
+	{
+       return v1.x*v2.x+v1.y*v2.y;
 	}
 
 	private void	drawCursor(GL2 gl)
