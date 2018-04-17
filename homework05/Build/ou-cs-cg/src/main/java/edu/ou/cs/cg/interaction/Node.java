@@ -24,6 +24,9 @@ public final class Node
     public int side=0;
     public String name;
     public Double angle;
+    //thsi is to check to see if the node is in the hull or not, if it is true, 
+    //it will be in the hull
+    public boolean hull=false;
 
     public Node(double centerx, double centery,double width,double height, float[] rgb,int side,String name,Double angle)
     {

@@ -74,8 +74,13 @@ public final class View
 	public Color[] colorlist;
 	public int[] sidelist;
 	public ArrayList<Node> nodelist=new ArrayList<Node>();
+	public ArrayList<Node> hulllist=new ArrayList<Node>();
+	public ArrayList<Point2D.Double> bpoints=new ArrayList<Point2D.Double>();
 	//the default hightlighted will be the last addeed node in this way
 	public int highlightedIndex=0;
+	//the radius of the booloon
+	public Double br=0.1;
+
 	//public double rotateAngle=0.0;
 
 
@@ -678,6 +683,7 @@ public final class View
 			count=count+1;
 			
 		}
+		drawConvexHull(gl);
 	}
 
 	//**********************************************************************
@@ -696,21 +702,8 @@ public final class View
 
 		gl.glEnd();
 	}
-
- //    //this will roatte the node with its own center with the passed in angle
-	// private void rotate(double angle,GL2 gl)
-	// {
-	// 	Node node=nodelist.get(highlightedIndex);
-	// 	Double cx=node.centerx;
-	// 	Double cy=node.centery;
-	// 	node.centerx=0.0;
-	// 	node.centery=0.0;
-	// 	//teh rotate around the center,
-	// 	drawNode(node,gl,true,angle);
-	// 	//then move it back
-	// 	node.centerx=cx;
-	// 	node.centery
-	// }
+    
+    
 
 	private void	drawAxes(GL2 gl)
 	{
@@ -730,12 +723,315 @@ public final class View
 	{
 		double length1=Math.sqrt(v1.x*v1.x+v1.y*v1.y);
 		double length2=Math.sqrt(v2.x*v2.x+v2.y*v2.y);
-		double crosspro=crossProduct(v1,v2);
-		return Math.acos(crosspro/(length1*length2));
+		double innerpro=innerProduct(v1,v2);
+		return Math.acos(innerpro/(length1*length2));
 
 	}
+    //the sign of the crossproduct will decide if it is clockwise or counter-colockwise.
+	public Double crossProduct(Point2D.Double p1, Point2D.Double p2, Point2D.Double p3)
+	{
+		return -(p2.x-p1.x)*(p3.y-p2.y)+(p2.y-p1.y)*(p3.x-p2.x);
+	}
+    
+    //construct the hull list based on the current nodelist
+	// public void getHullPoint()
+	// {
+	// 	//clear the hullpoint
+	// 	hulllist.clear();
+	// 	int first=findLeftMostPoint();
+	// 	Node node=nodelist.get(first);
+	// 	Point2D.Double p=new Point2D.Double(node.centerx,node.centery);
+	// 	hulllist.add(node);
+ //        int size=nodelist.size();
+ //        int first1=first;
+ //        int next=0;
+ //        //int next=(first+1)%size;
+ //        //keep adding to the hull if it does not return back to the first one
+ //       // while(next!=first)
+ //        do
+ //        {
+ //        	next=(first1+1)%size;
+ //        	Double nx=nodelist.get(next).centerx;
+ //        	Double ny=nodelist.get(next).centery;
+ //        	Point2D.Double q=new Point2D.Double(nx,ny);  
 
-	public Double crossProduct(Point2D.Double v1, Point2D.Double v2)
+ //        	for(int i=0;i<size;i++)
+ //        	{
+ //        		Double x=nodelist.get(i).centerx;
+ //        		Double y=nodelist.get(i).centery;
+ //        		Point2D.Double r=new Point2D.Double(x,y);
+ //                if(crossProduct(p,r,q)<0)
+ //                {
+ //                	next=i;
+ //                	//add the node to the hull
+ //                	hulllist.add(nodelist.get(i));
+ //                }
+               
+ //        	}
+
+ //        }
+
+        
+
+	// }
+
+	//get the list of point for the booloon start with the first point on the convex hull
+	// public ArrayList<Point2D.Double> getAuxilaryPoint()
+	// {
+	// 	for(Node n: hulllist)
+	// 	{
+            
+	// 	}
+	// }
+
+	//here point represent a vector
+	private Point2D.Double getPerpenVectorOutward(Point2D.Double p)
+	{
+
+		Double x1=1.0;
+		Double y1=-1.0*(p.y/p.x);
+		//the above two will make sure the inner product is 0,
+		//now need to make sure that the cross product is positive, so it will point out
+		Double x=x1/(Math.sqrt(x1*x1+y1*y1));
+	    Double y=y1/(Math.sqrt(x1*x1+y1*y1));
+
+	    if(p.y>=0)
+	    {
+	    	return new Point2D.Double(x,y);
+	    }
+        else
+        {
+        	return new Point2D.Double(-1.0*x,-1.0*y);
+        }
+	}
+
+
+
+	 public  void convexHull()
+    {
+        // There must be at least 3 points
+        //if (n < 3) return;
+      
+        // Initialize Result
+       // Vector<Point> hull = new Vector<Point>();
+      
+        // Find the leftmost point
+        hulllist.clear();
+        int l = findLeftMostPoint();
+       
+      
+        // Start from leftmost point, keep moving 
+        // counterclockwise until reach the start point
+        // again. This loop runs O(h) times where h is
+        // number of points in result or output.
+        int p = l, q;
+        int n=nodelist.size();
+        do
+        {
+            // Add current point to result
+            hulllist.add(nodelist.get(p));
+      
+            // Search for a point 'q' such that 
+            // orientation(p, x, q) is counterclockwise 
+            // for all points 'x'. The idea is to keep 
+            // track of last visited most counterclock-
+            // wise point in q. If any point 'i' is more 
+            // counterclock-wise than q, then update q.
+            q = (p + 1) % n;
+             
+            for (int i = 0; i < n; i++)
+            {
+               // If i is more counterclockwise than 
+               // current q, then update q
+            	Point2D.Double p1=new Point2D.Double(nodelist.get(p).centerx,nodelist.get(p).centery);
+            	Point2D.Double i1=new Point2D.Double(nodelist.get(i).centerx,nodelist.get(i).centery);
+            	Point2D.Double q1=new Point2D.Double(nodelist.get(q).centerx,nodelist.get(q).centery);
+               if (crossProduct(p1, i1, q1)<0)
+               {
+               	 q = i;
+
+               }
+                                                                      
+            }
+      
+            // Now q is the most counterclockwise with
+            // respect to p. Set p as q for next iteration, 
+            // so that q is added to result 'hull'
+            p = q;
+      
+        } while (p != l);  
+    }
+	//return the index of the node that have the x;
+	public int findLeftMostPoint()
+	{
+		int size=nodelist.size();
+		Double leftmost=10.0;
+		int besti=0;
+		for(int i=0;i<size;i++)
+		{
+          Double x=nodelist.get(i).centerx;
+          if(x<leftmost)
+          {
+    		leftmost=x;
+    		besti=i;
+          }
+		}
+		return besti;
+	}
+
+	public void drawConvexHull(GL2 gl)
+	{
+		
+
+
+	    //if there is only one point in the nodelist do noting
+	    if(nodelist.size()==0)
+	    {
+	    	//do nothing.
+	    }
+	    else if(nodelist.size()==1)
+	    {
+	    	//do nothing
+	    	Node node=nodelist.get(0);
+	        node.hull=true;
+	        hulllist.add(node);
+
+	    }
+	    else if(nodelist.size()==2)
+	    {
+	    	//then just draw a line
+	    	gl.glEnable(GL.GL_BLEND);
+			gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
+			//make the line thicker
+			gl.glLineWidth(6.0f);
+			gl.glColor3f(1.0f,0.5f,0.5f);
+			Node node1=nodelist.get(0);
+			Node node2=nodelist.get(1);
+			//set the property of the node to be on the hull
+			node1.hull=true;
+			node2.hull=true;
+			Double x1=node1.centerx;
+			Double x2=node2.centerx;
+			Double y1=node1.centery;
+			Double y2=node2.centery;
+			gl.glBegin(GL.GL_LINES);
+			gl.glVertex2d(x1,y1);
+			gl.glVertex2d(x2,y2);
+			gl.glEnd();
+			//add the node to the hulllist
+			hulllist.add(node1);
+			hulllist.add(node2);
+
+			//choose this color for the edge	
+	    }
+	    //need to check if the three points are colinear
+	    else if(nodelist.size()==3)
+	    {
+	    	Node node1=nodelist.get(0);
+			Node node2=nodelist.get(1);
+			Node node3=nodelist.get(2);
+			//check if they are colinear:
+			Point2D.Double p1=new Point2D.Double(node1.centerx,node1.centery);
+			Point2D.Double p2=new Point2D.Double(node2.centerx,node2.centery);
+			Point2D.Double p3=new Point2D.Double(node3.centerx,node3.centery);
+			//need to find which one is in the middle
+			gl.glEnable(GL.GL_BLEND);
+			gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
+			//make the line thicker
+			gl.glLineWidth(6.0f);
+			gl.glColor3f(1.0f,0.5f,0.5f);
+			if(crossProduct(p1,p2,p3)==0)
+			{
+	            gl.glBegin(GL.GL_LINES);
+				gl.glVertex2d(p1.x,p1.y);
+				gl.glVertex2d(p2.x,p2.y);
+				gl.glVertex2d(p3.x,p3.y);
+				gl.glEnd();
+				return;
+			}
+			else if(crossProduct(p1,p3,p2)==0)
+			{
+				gl.glBegin(GL.GL_LINES);
+				gl.glVertex2d(p1.x,p1.y);
+				gl.glVertex2d(p3.x,p3.y);
+				gl.glVertex2d(p2.x,p2.y);
+				gl.glEnd();
+				return;
+
+			}
+			else if(crossProduct(p2,p1,p3)==0)
+			{
+				gl.glBegin(GL.GL_LINES);
+				gl.glVertex2d(p2.x,p2.y);
+				gl.glVertex2d(p1.x,p1.y);
+				gl.glVertex2d(p3.x,p3.y);
+				gl.glEnd();
+				return;
+			}
+
+
+			//this is the no-colinaer case.
+	    	gl.glEnable(GL.GL_BLEND);
+			gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
+			//make the line thicker
+			gl.glLineWidth(6.0f);
+			gl.glColor3f(1.0f,0.5f,0.5f);
+   //          Node node1=nodelist.get(0);
+			// Node node2=nodelist.get(1);
+			// Node node3=nodelist.get(2);
+			Double x1=node1.centerx;
+			Double x2=node2.centerx;
+			Double x3=node3.centerx;
+			Double y1=node1.centery;
+			Double y2=node2.centery;
+			Double y3=node3.centery;
+			node1.hull=true;
+			node2.hull=true;
+			node3.hull=true;
+			gl.glBegin(GL.GL_LINE_LOOP);
+			gl.glVertex2d(x1,y1);
+			gl.glVertex2d(x2,y2);
+			gl.glVertex2d(x3,y3);
+			gl.glEnd();
+			gl.glColor3f(1.0f,1.0f,1.0f);
+			gl.glBegin(GL2.GL_POLYGON);
+			gl.glVertex2d(x1,y1);
+			gl.glVertex2d(x2,y2);
+			gl.glVertex2d(x3,y3);
+			gl.glEnd();
+			hulllist.add(node1);
+			hulllist.add(node2);
+			hulllist.add(node3);
+	    }
+	    //more general case is here.
+	    //add the first point that on the left most to the hull
+		else
+		{
+			convexHull();
+			gl.glEnable(GL.GL_BLEND);
+			gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
+			//make the line thicker
+			gl.glLineWidth(6.0f);
+			gl.glColor3f(1.0f,0.5f,0.5f);
+			gl.glBegin(GL.GL_LINE_LOOP);
+			for(Node n :hulllist)
+			{
+				gl.glVertex2d(n.centerx,n.centery);
+			}
+            
+			gl.glEnd();
+			gl.glColor4f(1.0f,1.0f,1.0f,0.5f);
+			gl.glBegin(GL2.GL_POLYGON);
+			for(Node n :hulllist)
+			{
+				gl.glVertex2d(n.centerx,n.centery);
+			}
+            
+			gl.glEnd();
+		}
+	}
+
+	public Double innerProduct(Point2D.Double v1, Point2D.Double v2)
 	{
        return v1.x*v2.x+v1.y*v2.y;
 	}
