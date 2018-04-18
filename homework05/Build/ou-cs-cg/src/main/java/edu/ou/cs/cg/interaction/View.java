@@ -76,6 +76,10 @@ public final class View
 	public ArrayList<Node> nodelist=new ArrayList<Node>();
 	public ArrayList<Node> hulllist=new ArrayList<Node>();
 	public ArrayList<Point2D.Double> bpoints=new ArrayList<Point2D.Double>();
+
+	//this will store the index of the  hullist node as the key and the value will be 
+	//a list of auxillary node
+	Map<Integer, Point2D.Double[]> bmap = new HashMap<Integer, Point2D.Double[]>();
 	//the default hightlighted will be the last addeed node in this way
 	public int highlightedIndex=0;
 	//the radius of the booloon
@@ -776,32 +780,103 @@ public final class View
 	// }
 
 	//get the list of point for the booloon start with the first point on the convex hull
-	// public ArrayList<Point2D.Double> getAuxilaryPoint()
-	// {
-	// 	for(Node n: hulllist)
-	// 	{
-            
-	// 	}
-	// }
+	public void getAuxilaryPoint()
+	{
+		// for(Node n: hulllist)
+		// {
+            //the point that stored in the hullist is ordered by the x value based on the algorithm
+            //we are using here
+
+		//}
+		int size=hulllist.size();
+		for(int i=0;i<size;i++)
+		{
+			int next=(i+1)%size;
+			Node n1=hulllist.get(i);
+			Node n2=hulllist.get(next);
+			Point2D.Double p1=new Point2D.Double(n1.centerx,n1.centery);
+			Point2D.Double p2=new Point2D.Double(n2.centerx,n2.centery);
+			//the we get the vector between them represent by a point will be
+			Vector v=new Vector(p2.x-p1.x,p2.y-p1.y);
+			Vector vp=getPerpenVectorOutward(v);
+
+		    Point2D.Double a1=addPointWithVector(p1,vp.scale(br));
+		    Point2D.Double a2=addPointWithVector(p2,vp.scale(br));
+            //add in those two point into bpoints
+            bpoints.add(a1);
+            bpoints.add(a2);
+           // bmap.put(i,new Point2D.Double[]{a1,a2});
+		}
+	}
+	//draw the booloon
+	public void drawBooloon(GL2 gl)
+	{
+        gl.glEnable(GL.GL_BLEND);
+		gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
+		//make the line thicker
+		gl.glLineWidth(6.0f);
+		gl.glColor3f(1.0f,0.5f,0.5f);
+		int size=bpoints.size();
+		for(int i=0;i<size-1;i=i+2)
+		{
+			gl.glBegin(GL.GL_LINES);
+			gl.glVertex2d(bpoints.get(i).x,bpoints.get(i).y);
+			gl.glVertex2d(bpoints.get(i+1).x,bpoints.get(i+1).y);
+			gl.glEnd();
+		}
+		int hullsize=hulllist.size();
+		for(int i=0;i<hullsize;i++)
+		{
+			
+			if(i==0)
+			 {
+			 	int j=bpoints.size()-1;
+			 	Node n=hulllist.get(0);
+			 	Point2D.Double c=new Point2D.Double(n.centerx,n.centery);
+			 	drawArc(gl,c,bpoints.get(i),bpoints.get(j));
+			 }
+			 else
+			 {
+			 	int k=2*i-1;
+			 	int j=2*i;
+			 	Node n=hulllist.get(i);
+			 	Point2D.Double c=new Point2D.Double(n.centerx,n.centery);
+			 	System.out.println("index i is :"+i);
+			 	drawArc(gl,c,bpoints.get(k),bpoints.get(j));
+			 }
+			 //Node n=hulllist.get(i);
+			//Point2D.Double c=new Point2D.Double(n.centerx,n.centery);
+			//drawArc(gl,c,bmap.get(i)[0],bmap.get(i)[1]);
+
+		}
+
+	}
+    //1,2,3,4,5,6,7,8
+    //0,(0,7) 1,(1,2),2(3,4),3(5,6)
+    //actually I am calculate a poiunt add to a vector here
+	public Point2D.Double addPointWithVector(Point2D.Double p, Vector v)
+	{
+       return new Point2D.Double(p.x+v.dX,p.y+v.dY);
+	}
 
 	//here point represent a vector
-	private Point2D.Double getPerpenVectorOutward(Point2D.Double p)
+	private Vector getPerpenVectorOutward(Vector p)
 	{
 
 		Double x1=1.0;
-		Double y1=-1.0*(p.y/p.x);
+		Double y1=-1.0*(p.dX/p.dY);
 		//the above two will make sure the inner product is 0,
 		//now need to make sure that the cross product is positive, so it will point out
 		Double x=x1/(Math.sqrt(x1*x1+y1*y1));
 	    Double y=y1/(Math.sqrt(x1*x1+y1*y1));
 
-	    if(p.y>=0)
+	    if(p.dY>=0)
 	    {
-	    	return new Point2D.Double(x,y);
+	    	return new Vector(x,y);
 	    }
         else
         {
-        	return new Point2D.Double(-1.0*x,-1.0*y);
+        	return new Vector(-1.0*x,-1.0*y);
         }
 	}
 
@@ -919,90 +994,109 @@ public final class View
 			gl.glVertex2d(x2,y2);
 			gl.glEnd();
 			//add the node to the hulllist
-			hulllist.add(node1);
-			hulllist.add(node2);
+			if(node1.centerx<=node2.centerx)
+			{
+				hulllist.add(node1);
+			    hulllist.add(node2);
+			}
+			else
+			{
+				hulllist.add(node2);
+			    hulllist.add(node1);
+			}
+			
+			//need to get rid of this later.
+			bpoints.clear();
+			getAuxilaryPoint();
+			drawBooloon(gl);
 
 			//choose this color for the edge	
 	    }
 	    //need to check if the three points are colinear
-	    else if(nodelist.size()==3)
-	    {
-	    	Node node1=nodelist.get(0);
-			Node node2=nodelist.get(1);
-			Node node3=nodelist.get(2);
-			//check if they are colinear:
-			Point2D.Double p1=new Point2D.Double(node1.centerx,node1.centery);
-			Point2D.Double p2=new Point2D.Double(node2.centerx,node2.centery);
-			Point2D.Double p3=new Point2D.Double(node3.centerx,node3.centery);
-			//need to find which one is in the middle
-			gl.glEnable(GL.GL_BLEND);
-			gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
-			//make the line thicker
-			gl.glLineWidth(6.0f);
-			gl.glColor3f(1.0f,0.5f,0.5f);
-			if(crossProduct(p1,p2,p3)==0)
-			{
-	            gl.glBegin(GL.GL_LINES);
-				gl.glVertex2d(p1.x,p1.y);
-				gl.glVertex2d(p2.x,p2.y);
-				gl.glVertex2d(p3.x,p3.y);
-				gl.glEnd();
-				return;
-			}
-			else if(crossProduct(p1,p3,p2)==0)
-			{
-				gl.glBegin(GL.GL_LINES);
-				gl.glVertex2d(p1.x,p1.y);
-				gl.glVertex2d(p3.x,p3.y);
-				gl.glVertex2d(p2.x,p2.y);
-				gl.glEnd();
-				return;
-
-			}
-			else if(crossProduct(p2,p1,p3)==0)
-			{
-				gl.glBegin(GL.GL_LINES);
-				gl.glVertex2d(p2.x,p2.y);
-				gl.glVertex2d(p1.x,p1.y);
-				gl.glVertex2d(p3.x,p3.y);
-				gl.glEnd();
-				return;
-			}
-
-
-			//this is the no-colinaer case.
-	    	gl.glEnable(GL.GL_BLEND);
-			gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
-			//make the line thicker
-			gl.glLineWidth(6.0f);
-			gl.glColor3f(1.0f,0.5f,0.5f);
-   //          Node node1=nodelist.get(0);
+	  //   else if(nodelist.size()==3)
+	  //   {
+	  //   	Node node1=nodelist.get(0);
 			// Node node2=nodelist.get(1);
 			// Node node3=nodelist.get(2);
-			Double x1=node1.centerx;
-			Double x2=node2.centerx;
-			Double x3=node3.centerx;
-			Double y1=node1.centery;
-			Double y2=node2.centery;
-			Double y3=node3.centery;
-			node1.hull=true;
-			node2.hull=true;
-			node3.hull=true;
-			gl.glBegin(GL.GL_LINE_LOOP);
-			gl.glVertex2d(x1,y1);
-			gl.glVertex2d(x2,y2);
-			gl.glVertex2d(x3,y3);
-			gl.glEnd();
-			gl.glColor3f(1.0f,1.0f,1.0f);
-			gl.glBegin(GL2.GL_POLYGON);
-			gl.glVertex2d(x1,y1);
-			gl.glVertex2d(x2,y2);
-			gl.glVertex2d(x3,y3);
-			gl.glEnd();
-			hulllist.add(node1);
-			hulllist.add(node2);
-			hulllist.add(node3);
-	    }
+			// //check if they are colinear:
+			// Point2D.Double p1=new Point2D.Double(node1.centerx,node1.centery);
+			// Point2D.Double p2=new Point2D.Double(node2.centerx,node2.centery);
+			// Point2D.Double p3=new Point2D.Double(node3.centerx,node3.centery);
+			// //need to find which one is in the middle
+			// gl.glEnable(GL.GL_BLEND);
+			// gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
+			// //make the line thicker
+			// gl.glLineWidth(6.0f);
+			// gl.glColor3f(1.0f,0.5f,0.5f);
+			// if(crossProduct(p1,p2,p3)==0)
+			// {
+	  //           gl.glBegin(GL.GL_LINES);
+			// 	gl.glVertex2d(p1.x,p1.y);
+			// 	gl.glVertex2d(p2.x,p2.y);
+			// 	gl.glVertex2d(p3.x,p3.y);
+			// 	gl.glEnd();
+			// 	return;
+			// }
+			// else if(crossProduct(p1,p3,p2)==0)
+			// {
+			// 	gl.glBegin(GL.GL_LINES);
+			// 	gl.glVertex2d(p1.x,p1.y);
+			// 	gl.glVertex2d(p3.x,p3.y);
+			// 	gl.glVertex2d(p2.x,p2.y);
+			// // 	gl.glEnd();
+			// // 	return;
+
+			// // }
+			// // else if(crossProduct(p2,p1,p3)==0)
+			// // {
+			// // 	gl.glBegin(GL.GL_LINES);
+			// // 	gl.glVertex2d(p2.x,p2.y);
+			// // 	gl.glVertex2d(p1.x,p1.y);
+			// // 	gl.glVertex2d(p3.x,p3.y);
+			// // 	gl.glEnd();
+			// // 	return;
+			// // }
+
+
+			// //this is the no-colinaer case.
+	  //   	gl.glEnable(GL.GL_BLEND);
+			// gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
+			// //make the line thicker
+			// gl.glLineWidth(6.0f);
+			// gl.glColor3f(1.0f,0.5f,0.5f);
+   // //          Node node1=nodelist.get(0);
+			// // Node node2=nodelist.get(1);
+			// // Node node3=nodelist.get(2);
+			// Double x1=node1.centerx;
+			// Double x2=node2.centerx;
+			// Double x3=node3.centerx;
+			// Double y1=node1.centery;
+			// Double y2=node2.centery;
+			// Double y3=node3.centery;
+			// node1.hull=true;
+			// node2.hull=true;
+			// node3.hull=true;
+			// gl.glBegin(GL.GL_LINE_LOOP);
+			// gl.glVertex2d(x1,y1);
+			// gl.glVertex2d(x2,y2);
+			// gl.glVertex2d(x3,y3);
+			// gl.glEnd();
+			// gl.glColor4f(1.0f,1.0f,1.0f,0.5f);
+			// gl.glBegin(GL2.GL_POLYGON);
+			// gl.glVertex2d(x1,y1);
+			// gl.glVertex2d(x2,y2);
+			// gl.glVertex2d(x3,y3);
+			// gl.glEnd();
+			// //if(node1.centerx<=node2.centerx && node1.centerx<node3.centerx)
+			// hulllist.add(node1);
+			// hulllist.add(node2);
+			// hulllist.add(node3);
+
+			// //need to delete later
+			// bpoints.clear();
+			// getAuxilaryPoint();
+		 //    drawBooloon(gl);
+	  //   }
 	    //more general case is here.
 	    //add the first point that on the left most to the hull
 		else
@@ -1028,9 +1122,102 @@ public final class View
 			}
             
 			gl.glEnd();
+			bpoints.clear();
+			getAuxilaryPoint();
+			// System.out.println("total points for auxillary: "+bpoints.size());
+			// for(Node a:hulllist)
+			// {
+			// 	System.out.println("points are: "+a.centerx);
+			// }
+		    drawBooloon(gl);
 		}
 	}
+    //if it is positive means it is counterclockwise, if it is negative means it is clockwise
+    //it will means that ac to ab is clockwise or counterclockwise
+    //true means countercolockwise
+	public boolean checkClockwise(Point2D.Double c, Point2D.Double a, Point2D.Double b)
+	{
+         Vector v1=new Vector(a.x-c.x,a.y-c.y);
+         Vector v2=new Vector(b.x-c.x,b.y-c.y);
+         double cross=v1.crossProduct(v2);
+         if(cross>=0)
+         {
+         	//this means it is counetrclockwise
+         	return true;
+         }
+         else
+         {
+         	return false;
+         }
+	}
+    //give 3 points need to draw the arch between them
+    public void drawArc(GL2 gl,Point2D.Double c, Point2D.Double p1, Point2D.Double p2)
+    {
+    	//first of all need to calcluate the arch
+    	Vector v11=new Vector(p1.x-c.x,p1.y-c.y);
+    	Vector v22=new Vector(p2.x-c.x,p2.y-c.y);
+        //then normalize it
+        Vector v1=v11.normalize();
+        Vector v2=v22.normalize();
 
+        double dot=v1.dotProduct(v2);
+        double theta=Math.acos(dot);
+
+        //also need to find the start theta
+        Vector base=new Vector(1,0);
+        //System.out.println("angle between two radius: "+theta);
+        double delta=theta/32.0;
+
+        //check which direction is the correct one
+        Vector f1;
+        Vector f2;
+        Point2D.Double pp1;
+        Point2D.Double pp2;
+        boolean direction=checkClockwise(c,p1,p2);
+        if(direction)
+        {
+        	f1=v1;
+        	f2=v2;
+        	pp1=p1;
+        	pp2=p2;
+        }
+        else
+        {
+        	f1=v2;
+        	f2=v1;
+        	pp1=p2;
+        	pp2=p1;
+        }
+        double dot1=f1.dotProduct(base);
+        double dot2=f2.dotProduct(base);
+        double theta1=Math.acos(dot1);
+        double theta2=Math.acos(dot2);
+
+        //then need to decide if the start point is below the x-axis or above the x-axis
+        //System.out.println("start angle is: "+theta1);
+        System.out.println("pp1 is: "+pp1.x);
+        if(pp1.y<=c.y)
+        {
+        	theta1=2*3.1415-theta1;
+        }
+
+        gl.glEnable(GL.GL_BLEND);
+		gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
+		//make the line thicker
+		gl.glLineWidth(6.0f);
+		gl.glColor3f(1.0f,0.5f,0.5f);
+		gl.glBegin(GL.GL_LINES);
+		//System.out.println("old point: "+p1.x);
+		//System.out.println("old point: "+p2.x);
+        for(int i=0;i<32;i++)
+        {
+        	double data=c.x+br*Math.cos(theta1+delta*i);
+        	double data1=c.x+br*Math.cos(theta1+delta*i);
+        	gl.glVertex2d(c.x+br*Math.cos(theta1+delta*i),c.y+br*Math.sin(theta1+delta*i));
+         
+        }
+        gl.glEnd();
+    }
 	public Double innerProduct(Point2D.Double v1, Point2D.Double v2)
 	{
        return v1.x*v2.x+v1.y*v2.y;

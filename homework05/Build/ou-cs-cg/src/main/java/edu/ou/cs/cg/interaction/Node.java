@@ -23,12 +23,15 @@ public final class Node
     float[] rgb=new float[3];
     public int side=0;
     public String name;
-    public Double angle;
+    public double angle;
     //thsi is to check to see if the node is in the hull or not, if it is true, 
     //it will be in the hull
     public boolean hull=false;
+    //this is two points that attach to the polygon in order to calculate the balloon
+    // public Point2D.Double b1=0.0;
+    // public Point2D.Double b2=0.0;
 
-    public Node(double centerx, double centery,double width,double height, float[] rgb,int side,String name,Double angle)
+    public Node(double centerx, double centery,double width,double height, float[] rgb,int side,String name,double angle)
     {
     	this.centerx=centerx;
     	this.centery=centery;
@@ -43,4 +46,14 @@ public final class Node
     	//this.originalindex=originalindex;
 
     }
+   // public Node(double centerx,double centery)
+   // {
+   // 	this.centerx=centerx;
+   // 	this.centery=centery;
+   // }
+
+   // public Node scale( double f ) {
+   //     Node v2 = new Node( this.centerx*f, this.centery*f);
+   //     return v2;
+   // }
 }
