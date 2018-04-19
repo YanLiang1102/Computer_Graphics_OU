@@ -40,6 +40,7 @@ public final class MouseHandler extends MouseAdapter
 	private Double cy=0.0;
 	private Double origx=0.0;
 	private Double origy=0.0;
+	private boolean fornode=false;
 
 	//**********************************************************************
 	// Constructors and Finalizer
@@ -74,8 +75,17 @@ public final class MouseHandler extends MouseAdapter
 		//System.out.println("cursor x: "+e.getX());
 		//System.out.println("cursor y: "+e.getY());
  		int index=view.findFrontMostSelected(v);
+ 		//which means u clicked some node
+ 		if(index!=-1)
+ 		{	
+           view.highlightNode(index);
+           fornode=true;
+ 		}
+ 		else{
+ 			fornode=false;
+ 		}
         //System.out.println("frontmost index for this is: "+index);
-		view.highlightNode(index);
+		
 		//inoder for the view to be repaint
 		//why do we need this repaint is the fps going to fix this???
 		view.setCursor(v);
@@ -116,27 +126,38 @@ public final class MouseHandler extends MouseAdapter
 	public void		mouseDragged(MouseEvent e)
 	{
 		Point2D.Double	v = calcCoordinatesInView(e.getX(), e.getY());
-		//when shift is up
-		if(!Utilities.isShiftDown(e))
+		Point2D.Double diff=new Point2D.Double(v.x-cx,v.y-cy);
+		if(fornode)
 		{
-			
-			 Point2D.Double diff=new Point2D.Double(v.x-cx,v.y-cy);
-			 view.setCenter(new Point2D.Double(origx+diff.x,origy+diff.y));
-			 
-		}
-		//when shift is down
-		else
-		{
-          //need to rotate;
-			Point2D.Double v1=new Point2D.Double(cx-origx,cy-origy);
-			Point2D.Double v2=new Point2D.Double(v.x-origx,v.y-origy);
-			Double angle=view.angleBetweenVectors(v1,v2);
-			//and this angle need to be reset when the highlighted node is changed.
-			//view.rotateAngle=angle;
-			Node node=view.getNode();
-			node.angle=angle;
+			//when shift is up
+			if(!Utilities.isShiftDown(e))
+			{
+				
+				 
+				 //this is set center for the currently selected node.
+				 view.setCenter(new Point2D.Double(origx+diff.x,origy+diff.y));
+				 
+			}
+			//when shift is down
+			else
+			{
+	          //need to rotate;
+				Point2D.Double v1=new Point2D.Double(cx-origx,cy-origy);
+				Point2D.Double v2=new Point2D.Double(v.x-origx,v.y-origy);
+				Double angle=view.angleBetweenVectors(v1,v2);
+				//and this angle need to be reset when the highlighted node is changed.
+				//view.rotateAngle=angle;
+				Node node=view.getNode();
+				node.angle=angle;
+
+			}
 
 		}
+
+		else{
+			view.setOrigin(new Point2D.Double(origx-0.5*diff.x,0.5*origy-diff.y));
+		}
+		
 		view.setCursor(v);
 		 
 	}

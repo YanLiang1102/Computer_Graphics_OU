@@ -99,6 +99,23 @@ public final class KeyHandler extends KeyAdapter
 					case KeyEvent.VK_L:
 		   					view.indexUp();
 							break;
+				    //using u to change the size of the balloon up
+				    case KeyEvent.VK_U:
+				    if(view.br<0.01)
+				    {
+				    	view.br=5*view.br;
+				    }
+				    view.br=view.br*1.5;
+				    break;
+				    //using j to change the size of the balloon down.
+				    case KeyEvent.VK_J:
+				    view.br=view.br*0.9;
+				    break;
+				    //r will reset the origin
+				    // case KeyEvent.VK_R:
+				    // view.setOrigin(new Point2D.Double(0.0,0.0));
+				    // System.out.println("I pressed on R");
+				    // break;
 					case KeyEvent.VK_ENTER:
 					        view.addNode();
 							break;
