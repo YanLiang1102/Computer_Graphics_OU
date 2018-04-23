@@ -1,0 +1,77 @@
+ 
+
+Computer Graphics Hw5 report 
+
+ 
+
+ ---YanLiang 112889478 04/18/2018 
+
+ 
+I used Dr.Weaver’s code base, so you just need to do cradle installDist and go run the
+./interaction under the build.
+
+On part two-  
+
+in order to not make the convex null out of view too fast, I put a 0.5* penalty on the drag vector. 
+
+On part Three,  
+
+I use K and L to loop through the name. 
+
+On part Six: 
+
+You can use U for make the balloon big and J for make the balloon smaller. 
+
+Other than that all the other cases are based on description you give us. 
+
+ 
+
+On the bonus point I did first 3 bonus: 
+
+The first one is using a gl.glScalef in the updateProjection part, basically just push another matrix on the projection to make the entire view to scale 
+
+The second one is the same idea as the first one, do a gl.glRotation with z-axiS. 
+
+And T will zoom in the view R will zoom out the view, z will rotate the view counter clockwise and shift+Z will rotate the view clockwise. 
+
+//code as below. 
+
+gl.glMatrixMode(GL2.GL_PROJECTION);            // Prepare for matrix xform 
+
+        gl.glLoadIdentity();                        // Set to identity matrix 
+
+        glu.gluOrtho2D(xmin, xmax, ymin, ymax);        // 2D translate and scale 
+
+        gl.glScalef(zoom, zoom, zoom); // scale the matrix 
+
+        if(counterclockwise) 
+
+        { 
+
+            gl.glRotatef(rotatex,0.0f,0.0f,1.0f); 
+
+  
+
+        } 
+
+        else 
+
+        { 
+
+            gl.glRotatef(rotatex,0.0f,0.0f,-1.0f); 
+
+        } 
+
+ 
+
+On bonus three, when you hit key H, 
+
+All the node in the view will line up in a line on x-axis, what I did is just set the y to be 0 and different of x, will be width1+width2, which width1 is the left object and width2 is the width of the right object. 
+
+ 
+
+ 
+
+ 
+
+ 
