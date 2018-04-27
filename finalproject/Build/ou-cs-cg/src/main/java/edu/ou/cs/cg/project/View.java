@@ -30,6 +30,17 @@ import com.jogamp.newt.event.MouseListener;
 import com.jogamp.newt.opengl.GLWindow;
 import com.jogamp.opengl.util.FPSAnimator;
 
+import java.awt.DisplayMode;
+
+import java.io.File;
+import java.io.IOException;
+
+import javax.swing.JFrame;
+
+import com.jogamp.opengl.util.FPSAnimator;
+import com.jogamp.opengl.util.texture.Texture;
+import com.jogamp.opengl.util.texture.TextureIO;
+
 
 
 public class View extends GLCanvas implements GLEventListener, KeyListener, MouseListener
@@ -81,16 +92,18 @@ public class View extends GLCanvas implements GLEventListener, KeyListener, Mous
 	private float bound1=70.0f;
 	private float bound2=140.0f;
 	private boolean hide=false;
+	private boolean splash=false;
+	private boolean show=false;
+	private int texture;
+	private Texture t;
+
 	//**********************************************************************
 	// Constructors and Finalizer
 	//**********************************************************************
   
 
 	public View(GLWindow window)
-	{		
-
-	
-			
+	{			
 		this.canvas = window;
 		// Initialize rendering
 		window.addGLEventListener(this);	
@@ -120,6 +133,17 @@ public class View extends GLCanvas implements GLEventListener, KeyListener, Mous
 		gl.glDepthFunc(GL_LEQUAL);
 		gl.glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 		gl.glShadeModel(GL_SMOOTH);
+		gl.glEnable(GL2.GL_TEXTURE_2D);
+	       try{
+			
+	         File im = new File("/Users/yanliang/comGraphic/gitCG/Computer_Graphics_OU/finalproject/Results/ou1.png");
+	      //     System.out.println(im.getCanonicalPath());
+	          t = TextureIO.newTexture(im, true);
+	          texture= t.getTextureObject(gl);
+	          
+	       }catch(IOException e){
+	          e.printStackTrace();
+	       }
 	
 	}
 	
@@ -147,77 +171,63 @@ public class View extends GLCanvas implements GLEventListener, KeyListener, Mous
 		//count=(count+1)%450;//%30;
 		count=count+1;
 		GL2 gl=drawable.getGL().getGL2();
-        gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			gl.glLoadIdentity();
+		
+       gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		 gl.glLoadIdentity();
 			
 			// camera transformations
+		 //  gl.glBindTexture(GL2.GL_TEXTURE_2D, texture);
 			 gl.glTranslatef(ZERO_F, ZERO_F, zoom);
 			 gl.glRotatef(cameraAngleX, ONE_F, ZERO_F, ZERO_F);
 		     gl.glRotatef(cameraAngleY, ZERO_F, ONE_F, ZERO_F);
 		     gl.glRotatef(cameraAngleZ, ZERO_F, ZERO_F, ONE_F);
-	    //this is a cheating way to calculate when will the flower come and leav.
-        // if(count>bound1 && count<bound2)
-        // {
-        // 	drawCubeInPieces(gl);
+		   
+			// gl.glBegin(GL_QUADS);
 
-        // }
-        // else{
-        	drawRubiksCube(gl);
+			// gl.glTexCoord2f(5.0f,0.0f);
+			// gl.glVertex2f(5.0f,0.0f);
+			// gl.glTexCoord2f(10.0f,0.0f);
+			// gl.glVertex2f(10.0f,0.0f);
+			// gl.glTexCoord2f(10.0f,5.0f);
+			// gl.glVertex2f(10.0f,5.0f);
+			// gl.glTexCoord2f(5.0f,5.0f);
+			// gl.glVertex2f(5.0f,5.0f);
 
-        // }
-   //      	gl.glPushMatrix();
-			// gl.glTranslatef(ZERO_F, ZERO_F, zoom);
-			// gl.glRotatef(cameraAngleX, ONE_F, ZERO_F, ZERO_F);
-		 //    gl.glRotatef(cameraAngleY, ZERO_F, ONE_F, ZERO_F);
-		 //    gl.glRotatef(cameraAngleZ, ZERO_F, ZERO_F, ONE_F);
-		    
-			//gl.glRotatef(90.0f,1.0f,1.0f,1.0f);
+			// gl.glEnd();
 
-		     //this is super kool to figure out!!!
-		  //    gl.glPushMatrix();
-		  //    gl.glTranslatef(-1.0f,0.0f,0.0f);
-		  //    gl.glRotatef((count*0.2f)%360,1.0f,1.0f,1.0f);
-		  //    gl.glTranslatef(1.0f,0.0f,0.0f);
-			 // drawLeftBottomCornor(gl);
-			 // gl.glPopMatrix();
-			 // drawTopRightCornor(gl);
-			 // drawAxes(gl);
+         	drawRubiksCube(gl);
 
 
-		if(cuttingoptions==0 && !stop)
-		{
-			//reset the count
-			if(!reset)
+			if(cuttingoptions==0 && !stop)
 			{
-			  reset=true;
-			  count=0;	
+				//reset the count
+				if(!reset)
+				{
+				  reset=true;
+				  count=0;	
+				}
+
+				// gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+				gl.glLoadIdentity();
+				gl.glPushMatrix();
+				// camera transformations
+				gl.glTranslatef(ZERO_F, ZERO_F, zoom);
+				gl.glRotatef(cameraAngleX, ONE_F, ZERO_F, ZERO_F);
+				gl.glRotatef(cameraAngleY, ZERO_F, ONE_F, ZERO_F);
+				gl.glRotatef(cameraAngleZ, ZERO_F, ZERO_F, ONE_F);
+
+				gl.glRotatef(90.0f,0.0f,1.0f,0.0f);
+				
+				//drawPlane(drawable.getGL().getGL2(),count);
+				drawPlaneCustomized(drawable.getGL().getGL2(),count,1,0);
+				drawPlaneCustomized(drawable.getGL().getGL2(),count,-1,2);
+				gl.glPopMatrix();
+				//to draw the zigzag surface.
+				drawZigZagPlane(gl,0.0f,0.0f,0,1.0f,-10.0f,2.0f,count);
+		        drawZigZagPlane(gl,0.0f,0.0f,1,1.0f,-6.0f,2.0f,count);
+		        drawZigZagPlane(gl,0.0f,0.0f,2,-1.0f,-8.0f,2.0f,count);
 			}
-
-			// gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			gl.glLoadIdentity();
-			gl.glPushMatrix();
-			// camera transformations
-			gl.glTranslatef(ZERO_F, ZERO_F, zoom);
-			gl.glRotatef(cameraAngleX, ONE_F, ZERO_F, ZERO_F);
-			gl.glRotatef(cameraAngleY, ZERO_F, ONE_F, ZERO_F);
-			gl.glRotatef(cameraAngleZ, ZERO_F, ZERO_F, ONE_F);
-
-			gl.glRotatef(90.0f,0.0f,1.0f,0.0f);
-			
-			//drawPlane(drawable.getGL().getGL2(),count);
-			drawPlaneCustomized(drawable.getGL().getGL2(),count,1,0);
-			drawPlaneCustomized(drawable.getGL().getGL2(),count,-1,2);
-			gl.glPopMatrix();
-		}
-
-		
-  //        drawZigZagPlane(gl,0.0f,0.0f,0,1.0f,-10.0f,2.0f,count);
-  //        drawZigZagPlane(gl,0.0f,0.0f,1,1.0f,-6.0f,2.0f,count);
-
-  //        drawZigZagPlane(gl,0.0f,0.0f,2,-1.0f,-8.0f,2.0f,count);
-		
-
-			}
+	}
 	private void	drawAxes(GL2 gl)
 	{
 		gl.glBegin(GL.GL_LINES);
@@ -335,184 +345,239 @@ public class View extends GLCanvas implements GLEventListener, KeyListener, Mous
 	//**********************************************************************
 
 	private void drawRubiksCube(GL2 gl) {
+		//gl.glBindTexture(GL2.GL_TEXTURE_2D, texture);
 		int lastIdx = rubiksCube.getSize()-1;
 		for (int x=0; x<rubiksCube.getSize(); x++) {
 			for (int y=0; y<rubiksCube.getSize(); y++) {
 				for (int z=0; z<rubiksCube.getSize(); z++) {
 					
 					float t = (float) lastIdx/2;
-					//if(z==0&&count>=30)
-					if(z==0)
-					{
-						gl.glPushMatrix();
-						gl.glRotatef(90.0f,0.0f,1.0f,0.0f);
-						gl.glTranslatef((x-t)*CUBIE_TRANSLATION_FACTOR, (y-t)*CUBIE_TRANSLATION_FACTOR, -(z-t)*CUBIE_TRANSLATION_FACTOR+4.0f);
-						drawCubie(gl, rubiksCube.getVisibleFaces(x, y, z), rubiksCube.getCubie(x, y, z));
-						gl.glPopMatrix();
 
-					}
-					else if(z==2)
-					//else if(z==2&&count>=30)
+					if(!splash)
 					{
-						gl.glPushMatrix();
-						gl.glRotatef(-90.0f,0.0f,1.0f,0.0f);
-						gl.glTranslatef((x-t)*CUBIE_TRANSLATION_FACTOR, (y-t)*CUBIE_TRANSLATION_FACTOR, -(z-t)*CUBIE_TRANSLATION_FACTOR+8.0f);
-						drawCubie(gl, rubiksCube.getVisibleFaces(x, y, z), rubiksCube.getCubie(x, y, z));
-						gl.glPopMatrix();
+						//just draw the cube if not split into pieces.
+						gl.glPushMatrix();					
+						gl.glRotatef(columnAnglesX[x], ONE_F, ZERO_F, ZERO_F);
+						gl.glRotatef(rowAnglesY[y], ZERO_F, ONE_F, ZERO_F);
+						gl.glRotatef(faceAnglesZ[z], ZERO_F, ZERO_F, ONE_F);
+	 				// bottom-left-front corner of cube is (0,0,0) so we need to center it at the origin
+						gl.glTranslatef((x-t)*CUBIE_TRANSLATION_FACTOR, (y-t)*CUBIE_TRANSLATION_FACTOR, -(z-t)*CUBIE_TRANSLATION_FACTOR);
+						drawCubie(gl, rubiksCube.getVisibleFaces(x, y, z), rubiksCube.getCubie(x, y, z));							
+					    gl.glPopMatrix();
 					}
+					//this is in split mode.
 					else
-
 					{
-						if(((x==0 && y==1)||(x==1&&y==0)||(x==2 && y==1)||(x==1&&y==2))&&!hide)
+						drawAxes(gl);
+						//if(z==0&&count>=30)
+						if(z==0)
 						{
-							
-	                        gl.glPushMatrix();
-							//gl.glRotatef(-90.0f,0.0f,1.0f,0.0f);
-							gl.glRotatef((count*0.2f)%360,0.0f,1.0f,0.0f);
-							gl.glTranslatef((x-t)*CUBIE_TRANSLATION_FACTOR, (y-t)*CUBIE_TRANSLATION_FACTOR, -(z-t)*CUBIE_TRANSLATION_FACTOR);
+							gl.glPushMatrix();
+							//is to control if we want to show the cutting pieces to user or not.
+							gl.glRotatef(90.0f,0.0f,1.0f,0.0f);
+							gl.glTranslatef((x-t)*CUBIE_TRANSLATION_FACTOR, (y-t)*CUBIE_TRANSLATION_FACTOR, -(z-t)*CUBIE_TRANSLATION_FACTOR+4.0f);
+							drawCubie(gl, rubiksCube.getVisibleFaces(x, y, z), rubiksCube.getCubie(x, y, z));
+							gl.glPopMatrix();
+
+						}
+					   else if(z==2)
+					//else if(z==2&&count>=30)
+						{
+							gl.glPushMatrix();
+							gl.glRotatef(-90.0f,0.0f,1.0f,0.0f);
+							gl.glTranslatef((x-t)*CUBIE_TRANSLATION_FACTOR, (y-t)*CUBIE_TRANSLATION_FACTOR, -(z-t)*CUBIE_TRANSLATION_FACTOR+8.0f);
 							drawCubie(gl, rubiksCube.getVisibleFaces(x, y, z), rubiksCube.getCubie(x, y, z));
 							gl.glPopMatrix();
 						}
+					   else
+
+						{
+							// if(((x==0 && y==1)||(x==1&&y==0)||(x==2 && y==1)||(x==1&&y==2))&&!hide)
+							// {
+								
+		     //                    gl.glPushMatrix();
+							// 	//gl.glRotatef(-90.0f,0.0f,1.0f,0.0f);
+							// 	gl.glRotatef((count*0.2f)%360,0.0f,1.0f,0.0f);
+							// 	gl.glTranslatef((x-t)*CUBIE_TRANSLATION_FACTOR, (y-t)*CUBIE_TRANSLATION_FACTOR, -(z-t)*CUBIE_TRANSLATION_FACTOR);
+							// 	drawCubie(gl, rubiksCube.getVisibleFaces(x, y, z), rubiksCube.getCubie(x, y, z));
+							// 	gl.glPopMatrix();
+							// }
+							if(!show)
+							{
+								gl.glPushMatrix();							
+								gl.glTranslatef((x-t)*CUBIE_TRANSLATION_FACTOR, (y-t)*CUBIE_TRANSLATION_FACTOR, -(z-t)*CUBIE_TRANSLATION_FACTOR);
+								drawCubie(gl, rubiksCube.getVisibleFaces(x, y, z), rubiksCube.getCubie(x, y, z));
+								gl.glPopMatrix();
+							}
+							
+						    //the following if code will make the mid square into pieces.
 						
-						  //draw the one on top left
-						float diff=0.0f;
-						 gl.glPushMatrix();
-					     gl.glTranslatef(-3.0f,1.0f,-1.0f);
-					     gl.glRotatef(90.0f,0.0f,1.0f,0.0f);
-						 drawLeftBottomCornor(gl);
-						 gl.glPopMatrix();
+                             if(show)
+                             {	
+                             	 //draw the one on top left
+							 float diff=0.0f;
+							 gl.glPushMatrix();
+						     gl.glTranslatef(-3.0f,1.0f,-1.0f);
+						     gl.glRotatef(90.0f,0.0f,1.0f,0.0f);
+							 drawLeftBottomCornor(gl);
+							 gl.glPopMatrix();
 
-						 gl.glPushMatrix();
-						 //for rotation
-						 gl.glTranslatef(-2.0f,2.0f,0.0f);
-					     gl.glRotatef((count*0.2f)%360,0.0f,0.0f,1.0f);
-					     gl.glTranslatef(2.0f,-2.0f,0.0f);
-					     //end for rotation code
-						 gl.glTranslatef(-3.0f+diff,1.0f,-1.0f);
-						 gl.glRotatef(90.0f,0.0f,1.0f,0.0f);
-						 drawTopRightCornor(gl);
-						 gl.glPopMatrix();
+							 gl.glPushMatrix();
+							 //for rotation
+							 gl.glTranslatef(-2.0f,2.0f,0.0f);
+						     gl.glRotatef((count*0.2f)%360,0.0f,0.0f,1.0f);
+						     gl.glTranslatef(2.0f,-2.0f,0.0f);
+						     //end for rotation code
+							 gl.glTranslatef(-3.0f+diff,1.0f,-1.0f);
+							 gl.glRotatef(90.0f,0.0f,1.0f,0.0f);
+							 drawTopRightCornor(gl);
+							 gl.glPopMatrix();
 
-						  //draw the one on bottom right
-						 gl.glPushMatrix();
-						 gl.glTranslatef(4.0f,-4.0f,0.0f);
-						 gl.glPushMatrix();
-					     gl.glTranslatef(-3.0f,1.0f,-1.0f);
-					     gl.glRotatef(90.0f,0.0f,1.0f,0.0f);
-						 drawLeftBottomCornor(gl);
-						 gl.glPopMatrix();
-						 gl.glPopMatrix();
-                         
-                         
-					     gl.glPushMatrix();
-					     //for rotation
-						 gl.glTranslatef(2.0f,-2.0f,0.0f);
-					     gl.glRotatef((count*0.4f)%360,0.0f,0.0f,1.0f);
-					     gl.glTranslatef(2.0f,-2.0f,0.0f);
-						 //end for rotation
-						 gl.glPushMatrix();
-						 gl.glTranslatef(-3.0f+diff,1.0f,-1.0f);
-						 gl.glRotatef(90.0f,0.0f,1.0f,0.0f);
-						 drawTopRightCornor(gl);
-						 gl.glPopMatrix();
-						 gl.glPopMatrix();
-						 gl.glPopMatrix();
+							  //draw the one on bottom right
+							 gl.glPushMatrix();
+							 gl.glTranslatef(4.0f,-4.0f,0.0f);
+							 gl.glPushMatrix();
+						     gl.glTranslatef(-3.0f,1.0f,-1.0f);
+						     gl.glRotatef(90.0f,0.0f,1.0f,0.0f);
+							 drawLeftBottomCornor(gl);
+							 gl.glPopMatrix();
+							 gl.glPopMatrix();
+	                         
+	                         
+						     gl.glPushMatrix();
+						     //for rotation
+							 gl.glTranslatef(2.0f,-2.0f,0.0f);
+						     gl.glRotatef((count*0.4f)%360,0.0f,0.0f,1.0f);
+						     gl.glTranslatef(2.0f,-2.0f,0.0f);
+							 //end for rotation
+							 gl.glPushMatrix();
+							 gl.glTranslatef(-3.0f+diff,1.0f,-1.0f);
+							 gl.glRotatef(90.0f,0.0f,1.0f,0.0f);
+							 drawTopRightCornor(gl);
+							 gl.glPopMatrix();
+							 gl.glPopMatrix();
+							 gl.glPopMatrix();
 
-						 //draw the oen the top right
-						 gl.glPushMatrix();
-						 gl.glTranslatef(2.0f,2.0f,0.0f);
-					     gl.glRotatef((count*0.4f)%360,1.0f,0.0f,0.0f);
-					     gl.glTranslatef(-2.0f,-2.0f,0.0f);
-						 gl.glPushMatrix();
-						 gl.glRotatef(90.0f,0.0f,0.0f,1.0f);
-						 gl.glTranslatef(4.0f,-4.0f,0.0f);
-						 gl.glPushMatrix();
-					     gl.glTranslatef(-3.0f,1.0f,-1.0f);
-					     gl.glRotatef(90.0f,0.0f,1.0f,0.0f);
-						 drawLeftBottomCornor(gl);
-						 gl.glPopMatrix();
-						 gl.glPopMatrix();
-						 gl.glPopMatrix();
+							 //draw the oen the top right
+							 gl.glPushMatrix();
+							 gl.glTranslatef(2.0f,2.0f,0.0f);
+						     gl.glRotatef((count*0.4f)%360,1.0f,0.0f,0.0f);
+						     gl.glTranslatef(-2.0f,-2.0f,0.0f);
+							 gl.glPushMatrix();
+							 gl.glRotatef(90.0f,0.0f,0.0f,1.0f);
+							 gl.glTranslatef(4.0f,-4.0f,0.0f);
+							 gl.glPushMatrix();
+						     gl.glTranslatef(-3.0f,1.0f,-1.0f);
+						     gl.glRotatef(90.0f,0.0f,1.0f,0.0f);
+							 drawLeftBottomCornor(gl);
+							 gl.glPopMatrix();
+							 gl.glPopMatrix();
+							 gl.glPopMatrix();
 
-						 gl.glPushMatrix();
-						 gl.glRotatef(90.0f,0.0f,0.0f,1.0f);
-						 gl.glTranslatef(4.0f,-4.0f,0.0f);
-						 gl.glPushMatrix();
-						 gl.glTranslatef(-3.0f+diff,1.0f,-1.0f);
-						 gl.glRotatef(90.0f,0.0f,1.0f,0.0f);
-						 drawTopRightCornor(gl);
-						 gl.glPopMatrix();
-						 gl.glPopMatrix();
+							 gl.glPushMatrix();
+							 gl.glRotatef(90.0f,0.0f,0.0f,1.0f);
+							 gl.glTranslatef(4.0f,-4.0f,0.0f);
+							 gl.glPushMatrix();
+							 gl.glTranslatef(-3.0f+diff,1.0f,-1.0f);
+							 gl.glRotatef(90.0f,0.0f,1.0f,0.0f);
+							 drawTopRightCornor(gl);
+							 gl.glPopMatrix();
+							 gl.glPopMatrix();
 
-						 //draw on the bottom left
-						 gl.glPushMatrix();
-						 gl.glTranslatef(-2.0f,-2.0f,0.0f);
-					     gl.glRotatef((count*0.4f)%360,1.0f,0.0f,0.0f);
-					     gl.glTranslatef(2.0f,2.0f,0.0f);
-						 gl.glPushMatrix();
-						 gl.glTranslatef(-4.0f,-4.0f,0.0f);
-						 gl.glRotatef(90.0f,0.0f,0.0f,1.0f);
-						 gl.glTranslatef(4.0f,-4.0f,0.0f);
-						 gl.glPushMatrix();
-					     gl.glTranslatef(-3.0f,1.0f,-1.0f);
-					     gl.glRotatef(90.0f,0.0f,1.0f,0.0f);
-						 drawLeftBottomCornor(gl);
-						 gl.glPopMatrix();
-						 gl.glPopMatrix();
-						 gl.glPopMatrix();
-
-
-						 gl.glPushMatrix();
-						 gl.glTranslatef(-4.0f,-4.0f,0.0f);
-						 gl.glRotatef(90.0f,0.0f,0.0f,1.0f);
-						 gl.glTranslatef(4.0f,-4.0f,0.0f);
-						 gl.glPushMatrix();
-						 gl.glTranslatef(-3.0f+diff,1.0f,-1.0f);
-						 gl.glRotatef(90.0f,0.0f,1.0f,0.0f);
-						 drawTopRightCornor(gl);
-						 gl.glPopMatrix();
-						 gl.glPopMatrix();
-
-                         
-
-                         //this is to draw the 4 pieces in the middle
-						 for(int i=0;i<=3;i++)
-						 {
-						 	gl.glPushMatrix();
-						 	if(i==0)
-                            {
-                            	gl.glTranslatef(0.0f,-2.0f,0.0f);
-                            	//do rotate with y axia before the translation.
-                            	gl.glRotatef((count*0.4f)%360,0.0f,1.0f,0.0f);
-                            }
-                            if(i==2)
-                            {
-                            	gl.glTranslatef(0.0f,2.0f,0.0f);
-                            	gl.glRotatef((count*0.4f)%360,0.0f,1.0f,0.0f);
-                            }
-						 	if(i%2==1)
-						 	{
-						 		//make it rotate with x-axis so user can see what is going on there
-						 		gl.glRotatef((count*0.4f)%360,1.0f,0.0f,0.0f);
-						 	}
-
-						 	gl.glRotatef(90*i,0.0f,0.0f,1.0f);
-						 	drawMiddlePiece(gl,(float)i);
-						 	gl.glPopMatrix();
-						 }
-						 drawAxes(gl);
+							 //draw on the bottom left
+							 gl.glPushMatrix();
+							 gl.glTranslatef(-2.0f,-2.0f,0.0f);
+						     gl.glRotatef((count*0.4f)%360,1.0f,0.0f,0.0f);
+						     gl.glTranslatef(2.0f,2.0f,0.0f);
+							 gl.glPushMatrix();
+							 gl.glTranslatef(-4.0f,-4.0f,0.0f);
+							 gl.glRotatef(90.0f,0.0f,0.0f,1.0f);
+							 gl.glTranslatef(4.0f,-4.0f,0.0f);
+							 gl.glPushMatrix();
+						     gl.glTranslatef(-3.0f,1.0f,-1.0f);
+						     gl.glRotatef(90.0f,0.0f,1.0f,0.0f);
+							 drawLeftBottomCornor(gl);
+							 gl.glPopMatrix();
+							 gl.glPopMatrix();
+							 gl.glPopMatrix();
 
 
+							 gl.glPushMatrix();
+							 gl.glTranslatef(-4.0f,-4.0f,0.0f);
+							 gl.glRotatef(90.0f,0.0f,0.0f,1.0f);
+							 gl.glTranslatef(4.0f,-4.0f,0.0f);
+							 gl.glPushMatrix();
+							 gl.glTranslatef(-3.0f+diff,1.0f,-1.0f);
+							 gl.glRotatef(90.0f,0.0f,1.0f,0.0f);
+							 drawTopRightCornor(gl);
+							 gl.glPopMatrix();
+							 gl.glPopMatrix();
+
+	                         
+
+	                         //this is to draw the 4 pieces in the middle
+							 for(int i=0;i<=3;i++)
+							 {
+							 	gl.glPushMatrix();
+							 	if(i==0)
+	                            {
+	                            	gl.glTranslatef(0.0f,-2.0f,0.0f);
+	                            	//do rotate with y axia before the translation.
+	                            	gl.glRotatef((count*0.4f)%360,0.0f,1.0f,0.0f);
+	                            }
+	                            if(i==2)
+	                            {
+	                            	gl.glTranslatef(0.0f,2.0f,0.0f);
+	                            	gl.glRotatef((count*0.4f)%360,0.0f,1.0f,0.0f);
+	                            }
+							 	if(i%2==1)
+							 	{
+							 		//make it rotate with x-axis so user can see what is going on there
+							 		gl.glRotatef((count*0.4f)%360,1.0f,0.0f,0.0f);
+							 	}
+
+							 	gl.glRotatef(90*i,0.0f,0.0f,1.0f);
+							 	drawMiddlePiece(gl,(float)i);
+							 	gl.glPopMatrix();
+							 }
+							 //to draw the four rotating small cubes
+							 drawRotateCubeOnTheSide(gl);
+							}
+                          }							 
 					}
-					
-					
-					
 				   // gl.glPopMatrix();
 				}
 			}
 		}
 		//gl.glLoadIdentity();
+	}
+	//draw four cubes rotate on the side
+	private void drawRotateCubeOnTheSide(GL2 gl)
+	{
+		gl.glPushMatrix();
+		gl.glRotatef((count*0.4f)%360,1.0f,0.0f,0.0f);
+		gl.glTranslatef(-1.0f,10.0f,0.0f);
+		drawUnitCube(gl);
+		gl.glPopMatrix();
 
+		gl.glPushMatrix();
+		gl.glRotatef((count*0.4f)%360,1.0f,0.0f,0.0f);
+		gl.glTranslatef(-1.0f,-10.0f,0.0f);
+		drawUnitCube(gl);
+		gl.glPopMatrix();
+        
+        gl.glPushMatrix();
+		gl.glRotatef((count*0.4f)%360,0.0f,1.0f,0.0f);
+		gl.glTranslatef(10.0f,-1.0f,0.0f);
+		drawUnitCube(gl);
+		gl.glPopMatrix();
+
+
+        gl.glPushMatrix();
+		gl.glRotatef((count*0.4f)%360,0.0f,1.0f,0.0f);
+		gl.glTranslatef(-10.0f,-1.0f,0.0f);
+		drawUnitCube(gl);
+		gl.glPopMatrix();
 	}
 	//draw the cube when it is cutted into pieces.
 	private void drawCubeInPieces(GL2 gl)
@@ -620,11 +685,25 @@ public class View extends GLCanvas implements GLEventListener, KeyListener, Mous
 	}
 	private void drawUnitSurface(GL2 gl)
 	{
+		//gl.glEnable(GL2.GL_TEXTURE_2D);
+		//
+		//gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		//gl.glBindTexture(GL2.GL_TEXTURE_2D, texture);
 		gl.glBegin(GL_QUADS);
+		//gl.glTexCoord2f(0.0f, 0.0f);
+		// gl.glVertex3f(ZERO_F,ZERO_F,ZERO_F);
+		// gl.glVertex3f(TWO_F,ZERO_F,ZERO_F);
+		// gl.glVertex3f(TWO_F,TWO_F,ZERO_F);
+		// gl.glVertex3f(ZERO_F,TWO_F,ZERO_F);
+		gl.glTexCoord2f(ZERO_F,ZERO_F);
 		gl.glVertex3f(ZERO_F,ZERO_F,ZERO_F);
+		gl.glTexCoord2f(ZERO_F,ZERO_F);
 		gl.glVertex3f(TWO_F,ZERO_F,ZERO_F);
+		gl.glTexCoord2f(ZERO_F,ZERO_F);
 		gl.glVertex3f(TWO_F,TWO_F,ZERO_F);
+		gl.glTexCoord2f(ZERO_F,ZERO_F);
 		gl.glVertex3f(ZERO_F,TWO_F,ZERO_F);
+
 		gl.glEnd();
 	}
 	//draw middle triangle
@@ -822,6 +901,12 @@ public class View extends GLCanvas implements GLEventListener, KeyListener, Mous
 			    cuttingoptions=0;
 			    stop=false;
 			    break;
+			case KeyEvent.VK_P:
+				splash=true;
+				break;
+			case KeyEvent.VK_O:
+				splash=false;
+				break;
 			case KeyEvent.VK_A:
 			//make the matrix come back again.
 				count=0;
@@ -833,14 +918,14 @@ public class View extends GLCanvas implements GLEventListener, KeyListener, Mous
 			case KeyEvent.VK_X:
 				 zoom=zoom-1.0f;
 				 break;
-		    //hide the box that not getting cut in the middle
-		    case KeyEvent.VK_H:
-		    	 hide=true;
-		    	 break;
 		    //unhide the box that not getting cut in the middle
 		    case KeyEvent.VK_U:
-		    	 hide=false;
+		    	 show=false;
 		    	 break;
+		    //show what is the cutting pieces going to look like
+		    case KeyEvent.VK_I:
+		         show=true;
+		         break;
 
 			//stop the animation
 			case KeyEvent.VK_S:

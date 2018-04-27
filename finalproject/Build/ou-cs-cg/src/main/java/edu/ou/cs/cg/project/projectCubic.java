@@ -29,6 +29,11 @@ import com.jogamp.newt.opengl.GLWindow;
 import com.jogamp.opengl.util.*;
 import com.jogamp.opengl.util.gl2.GLUT;
 
+import java.awt.DisplayMode;
+
+import java.io.File;
+import java.io.IOException;
+
 
 
 //******************************************************************************
@@ -58,6 +63,9 @@ public final class projectCubic
 	
 	public static void main(String[] args)
 	{
+		File im = new File("/Users/yanliang/comGraphic/gitCG/Computer_Graphics_OU/finalproject/Build/ou-cs-cg/build/install/template/bin/ou3.jpeg");
+	          //System.out.println(im.getCanonicalPath());
+		System.out.println("hey I am not here can u do that?");
 		GLProfile glp = GLProfile.getDefault();
 		GLCapabilities caps = new GLCapabilities(glp);
 		GLWindow window = GLWindow.create(caps);	 
